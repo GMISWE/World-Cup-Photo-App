@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GMI × World Cup 2026 · Team Photo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Geist+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+  :root {
+    --color-lime: #ddea4d;
+    --color-lime-foreground: #000;
+    --color-lime-soft: rgba(221, 234, 77, 0.18);
+    --color-lime-glow: rgba(221, 234, 77, 0.4);
+    --color-section-dark: #000;
+    --color-section-gray: #262626;
+    --surface-1:  #0e0e0e;
+    --surface-2:  #101010;
+    --surface-3:  #171717;
+    --surface-4:  #1c1c1c;
+    --border-dark: #404040;
+    --border-soft: rgba(222, 222, 222, 0.12);
+    --text:       #fafafa;
+    --muted:      #a3a3a3;
+    --destructive:#fe6eb7;
+    --radius:     0px;
+    --radius-lg:  16px;
+    --ease-out:   cubic-bezier(0,0,.2,1);
+    --ease-bounce: cubic-bezier(.2,.9,.3,1.2);
+    --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+    --font-body:    "Inter", system-ui, sans-serif;
+    --font-mono:    "Geist Mono", ui-monospace, "SF Mono", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--color-section-dark); color: var(--text); font-family: var(--font-body); -webkit-font-smoothing: antialiased; overflow: hidden; height: 100vh; }
+  button { font: inherit; cursor: pointer; background: transparent; color: inherit; border: 0; }
+
+  /* ─── Pixel icons (Pixelarticons via CSS mask, inherits currentColor) ─── */
+  .px {
+    display: inline-block;
+    width: 1em; height: 1em;
+    background: currentColor;
+    -webkit-mask: var(--mask) no-repeat center / contain;
+            mask: var(--mask) no-repeat center / contain;
+    vertical-align: -0.15em;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+  .px-camera      { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/camera.svg"); }
+  .px-upload      { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/upload.svg"); }
+  .px-check       { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/check.svg"); }
+  .px-close       { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/close.svg"); }
+  .px-download    { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/download.svg"); }
+  .px-reload      { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/reload.svg"); }
+  .px-arrow-right { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/arrow-right.svg"); }
+  .px-image-plus  { --mask: url("https://cdn.jsdelivr.net/npm/pixelarticons@1.8.1/svg/image-plus.svg"); }
+
+  /* ─── Buttons ─── */
+  .btn-primary {
+    background: var(--color-lime);
+    color: var(--color-lime-foreground);
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 16px 32px;
+    font-size: 16px;
+    border-radius: var(--radius);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-primary .px { font-size: 18px; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 28px var(--color-lime-glow); }
+  .btn-primary:active:not(:disabled) { transform: translateY(0); }
+  .btn-primary:disabled { background: #2a2a2a; color: #525252; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-dark);
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    font-size: 14px;
+    border-radius: var(--radius);
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-outline:hover { border-color: var(--color-lime); background: var(--color-lime-soft); color: var(--color-lime); }
+  .btn-outline .px { font-size: 16px; }
+  .link-ghost {
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border: 0;
+    text-decoration: none;
+  }
+  .link-ghost:hover { color: var(--color-lime); }
+
+  /* ─── Workspace shell ─── */
+  .workspace {
+    position: relative;
+    display: grid;
+    width: 100vw;
+    height: 100vh;
+    padding: 24px;
+    gap: 24px;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(221,234,77,0.05), transparent),
+      radial-gradient(1000px 500px at 0% 110%, rgba(221,234,77,0.04), transparent),
+      var(--color-section-dark);
+    transition: grid-template-rows 0.6s var(--ease-out), grid-template-columns 0.6s var(--ease-out);
+  }
+  .workspace[data-state="capture"]    { grid-template: "cam" 1fr / 1fr; }
+  .workspace[data-state="ready"]      { grid-template: "photo picker" 1fr / minmax(420px, 1fr) 1.4fr; }
+  .workspace[data-state="generating"] { grid-template: "choreo" 1fr / 1fr; }
+  .workspace[data-state="result"]     { grid-template: "result" 1fr / 1fr; }
+  @media (max-aspect-ratio: 1/1) {
+    .workspace[data-state="ready"] { grid-template: "photo" 1fr "picker" 1.3fr / 1fr; }
+  }
+
+  /* All regions hidden by default; per-state rules below switch ONE on at a time. */
+  .region { display: none; min-width: 0; min-height: 0; }
+  .cam-region    { grid-area: cam; }
+  .photo-region  { grid-area: photo; }
+  .picker-region { grid-area: picker; }
+  .action-region { grid-area: action; }
+  .choreo-region { grid-area: choreo; }
+  .result-region { grid-area: result; }
+
+  .workspace[data-state="capture"]    .cam-region    { display: flex; }
+  .workspace[data-state="ready"]      .photo-region  { display: grid; }
+  .workspace[data-state="ready"]      .picker-region { display: flex; }
+  /* .action-region is no longer shown in ready state — generation auto-fires on country pick. */
+  .workspace[data-state="generating"] .choreo-region { display: flex; }
+  .workspace[data-state="result"]     .result-region { display: flex; }
+
+  /* ─── Wordmark (always visible top-left) ─── */
+  .wordmark {
+    position: absolute;
+    top: 18px; left: 24px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    z-index: 50;
+    pointer-events: none;
+  }
+  .wordmark .dot { display: inline-block; width: 7px; height: 7px; background: var(--color-lime); margin-right: 8px; vertical-align: middle; animation: dotPulse 2s infinite ease-in-out; }
+  @keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ─── Upload link (floating, capture state only) ─── */
+  .upload-link {
+    position: absolute;
+    bottom: 20px; right: 24px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 8px 12px;
+    border: 1px solid var(--border-soft);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(6px);
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .upload-link:hover { color: var(--color-lime); border-color: var(--color-lime); background: rgba(0,0,0,0.6); }
+  .upload-link .px { font-size: 14px; }
+  .workspace:not([data-state="capture"]) .upload-link { display: none; }
+
+  /* ─── Cam region ─── */
+  .cam-region {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid var(--border-soft);
+    background: var(--surface-1);
+    overflow: hidden;
+  }
+  .cam-stage {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .cam-stage video, .cam-stage img.preview {
+    width: 100%; height: 100%; object-fit: contain;
+    background: #000;
+  }
+  .cam-stage video.mirror { transform: scaleX(-1); }
+  .cam-stage .cam-placeholder {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 20px;
+  }
+  .cam-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .cam-overlay > * { pointer-events: auto; }
+  /* Viewfinder brackets in the four corners */
+  .vf-bracket {
+    position: absolute;
+    width: 36px; height: 36px;
+    border: 2px solid var(--color-lime);
+    opacity: 0.85;
+    filter: drop-shadow(0 0 6px var(--color-lime-glow));
+  }
+  .vf-bracket.tl { top: 18px;    left: 18px;    border-right: 0; border-bottom: 0; }
+  .vf-bracket.tr { top: 18px;    right: 18px;   border-left: 0;  border-bottom: 0; }
+  .vf-bracket.bl { bottom: 80px; left: 18px;    border-right: 0; border-top: 0;    }
+  .vf-bracket.br { bottom: 80px; right: 18px;   border-left: 0;  border-top: 0;    }
+  /* Caption hint at top of cam */
+  .cam-hint {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    padding: 6px 14px;
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: captureFloat 0.7s var(--ease-out) 0.1s backwards;
+  }
+  /* Capture button anchored bottom-center so it never sits over a face */
+  .capture-dock {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 16px 24px 32px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.78));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    animation: captureFloat 0.55s var(--ease-out) 0.2s backwards;
+  }
+  @keyframes captureFloat {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  .capture-dock .label {
+    position: absolute;
+    top: -28px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  #capture-btn { display: inline-flex; align-items: center; gap: 12px; font-size: 18px; padding: 18px 36px; }
+  #capture-btn .px { font-size: 22px; }
+  .countdown-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  .countdown-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(180px, 28vw, 360px);
+    line-height: 1;
+    color: var(--color-lime);
+    text-shadow: 0 0 60px var(--color-lime-glow);
+    animation: countTick 1s linear;
+  }
+  @keyframes countTick {
+    0%   { transform: scale(1.4); opacity: 0; }
+    25%  { transform: scale(1);   opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.4; }
+  }
+  .flash-overlay {
+    position: absolute; inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .flash-overlay.firing {
+    animation: flashFire 0.32s ease-out;
+  }
+  @keyframes flashFire {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  /* (privacy text moved into the capture dock as a tiny note) */
+
+  /* ─── Photo region ─── */
+  .photo-region {
+    grid-template: "frame" 1fr "strip" auto / 1fr;
+    gap: 12px;
+    min-height: 0;
+  }
+  .photo-frame {
+    grid-area: frame;
+    position: relative;
+    background: var(--surface-1);
+    border: 1px solid var(--border-soft);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo-frame img.photo {
+    max-width: 100%; max-height: 100%;
+    width: auto; height: auto;
+    display: block;
+  }
+  .redo-photo-btn {
+    position: absolute;
+    top: 12px; right: 12px;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text);
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-soft);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.12s;
+  }
+  .redo-photo-btn:hover {
+    color: var(--color-lime);
+    border-color: var(--color-lime);
+    background: rgba(0, 0, 0, 0.78);
+    transform: translateY(-1px);
+  }
+  .redo-photo-btn .px { font-size: 14px; }
+  .photo-frame .box {
+    position: absolute;
+    border: 2px solid var(--color-lime);
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(0,0,0,0.3);
+    pointer-events: none;
+    animation: boxPop 0.45s var(--ease-bounce) backwards;
+  }
+  .photo-frame .box .chip {
+    position: absolute; top: -22px; left: -2px;
+    background: var(--color-lime); color: var(--color-lime-foreground);
+    font-family: var(--font-mono); font-weight: 700; font-size: 11px;
+    padding: 2px 8px;
+    letter-spacing: 0.05em;
+  }
+  @keyframes boxPop { from { opacity: 0; transform: scale(1.3); } to { opacity: 1; transform: scale(1); } }
+
+  .faces-strip {
+    grid-area: strip;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px 12px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-soft);
+    height: 130px;
+    align-items: stretch;
+  }
+  .faces-strip::-webkit-scrollbar { height: 6px; }
+  .faces-strip::-webkit-scrollbar-thumb { background: var(--border-dark); }
+  .face-tile { flex: 0 0 110px; }
+  .face-tile {
+    background: var(--surface-3);
+    border: 1px solid var(--border-soft);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    transition: opacity 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .face-tile.excluded { opacity: 0.32; }
+  .face-tile .tile-img-wrap {
+    aspect-ratio: 1 / 1;
+    background: var(--surface-2);
+    overflow: hidden;
+    position: relative;
+  }
+  .face-tile .tile-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+  }
+  .face-tile .tile-foot {
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    background: var(--surface-3);
+  }
+  .face-tile .tile-num {
+    font-family: var(--font-mono); font-weight: 700; font-size: 11px;
+    color: var(--color-lime); letter-spacing: 0.08em;
+  }
+  .face-tile .status-pill {
+    font-family: var(--font-mono); font-size: 9px; padding: 2px 5px;
+    background: var(--surface-2); color: var(--muted); letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .face-tile .status-pill.ok { background: var(--color-lime-soft); color: var(--color-lime); }
+  .face-tile .status-pill.err { background: rgba(254,110,183,0.15); color: var(--destructive); }
+  .face-tile .inc-check {
+    position: absolute; top: 6px; right: 6px;
+    width: 18px; height: 18px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid var(--color-lime);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-lime);
+    font-family: var(--font-mono); font-weight: 700; font-size: 12px;
+    cursor: pointer;
+  }
+  .face-tile.excluded .inc-check { background: rgba(0,0,0,0.7); border-color: var(--border-dark); color: transparent; }
+  .face-tile .mini-spin {
+    width: 10px; height: 10px;
+    border: 2px solid var(--border-dark);
+    border-top-color: var(--color-lime);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .face-flyer {
+    position: fixed;
+    z-index: 100;
+    pointer-events: none;
+    object-fit: cover;
+    border: 2px solid var(--color-lime);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.55), 0 0 40px var(--color-lime-glow);
+    transform-origin: top left;
+    will-change: transform;
+  }
+
+  /* ─── Picker region ─── */
+  .picker-region {
+    flex-direction: column;
+    background: var(--surface-1);
+    border: 1px solid var(--border-soft);
+    padding: 16px;
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+  }
+  .picker-header {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .picker-header::before {
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--color-lime);
+    display: inline-block;
+  }
+  .country-grid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 6px;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+  @media (max-aspect-ratio: 1/1) {
+    .country-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  }
+  .card {
+    position: relative;
+    background: var(--surface-3);
+    border: 1px solid var(--border-soft);
+    padding: 6px 4px 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    min-width: 0;
+    transition: transform 0.25s var(--ease-bounce), opacity 0.3s, border-color 0.15s, background 0.15s;
+    animation: cardEntry 0.5s var(--ease-bounce) backwards;
+  }
+  @keyframes cardEntry { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .card:hover { border-color: var(--color-lime); background: var(--surface-4); }
+  /* corner targeting brackets on hover */
+  .card::before, .card::after {
+    content: "";
+    position: absolute;
+    width: 10px; height: 10px;
+    border: 2px solid var(--color-lime);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .card::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+  .card::after  { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+  .card:hover::before, .card:hover::after { opacity: 1; }
+  .card.selected { transform: scale(1.12); border-color: var(--color-lime); background: var(--surface-4); box-shadow: 0 0 0 2px var(--color-lime-glow), 0 20px 40px rgba(0,0,0,0.6); z-index: 5; }
+  .card.dimmed { opacity: 0.15; filter: blur(0.5px); pointer-events: none; }
+  .card .flag { width: 100%; aspect-ratio: 5 / 3; background: #fff; overflow: hidden; }
+  .card .flag img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .name { font-family: var(--font-mono); font-size: 9px; line-height: 1.15; text-align: center; letter-spacing: 0.02em; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+
+  /* ─── Action region ─── */
+  .action-region {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-soft);
+    padding: 16px 24px;
+    min-height: 0;
+  }
+  .kit-indicator {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+  .kit-indicator .kit-flag { width: 40px; height: 28px; background: #fff; overflow: hidden; border: 1px solid var(--border-soft); }
+  .kit-indicator .kit-flag img { width: 100%; height: 100%; object-fit: cover; }
+  .kit-indicator .kit-name { color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: 0.06em; }
+  .kit-indicator .kit-swatches { display: flex; gap: 4px; }
+  .kit-indicator .sw { width: 16px; height: 16px; border: 1px solid rgba(255,255,255,0.18); }
+  .kit-indicator .empty { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.15em; }
+  .action-cta { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 280px; }
+  #gen-btn { min-width: 280px; }
+  .gen-status {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    min-height: 16px;
+  }
+  .gen-status .live {
+    color: var(--color-lime);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  /* ─── Choreo region ─── */
+  .choreo-region {
+    position: relative;
+    background: #000;
+    border: 1px solid var(--border-soft);
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+  }
+  .pitch-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(221,234,77,0.04) 0%, rgba(0,0,0,0) 50%, rgba(221,234,77,0.05) 100%),
+      repeating-linear-gradient(90deg, rgba(221,234,77,0.08) 0 1px, transparent 1px 80px),
+      repeating-linear-gradient(0deg, rgba(221,234,77,0.05) 0 1px, transparent 1px 80px);
+    background-size: auto, 80px 80px, 80px 80px;
+    opacity: 0.65;
+    animation: pitchPan 22s linear infinite;
+  }
+  @keyframes pitchPan { to { background-position: 0 0, 80px 0, 0 80px; } }
+  .pitch-bg::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: min(50vmin, 420px); height: min(50vmin, 420px);
+    border: 1px solid rgba(221,234,77,0.18);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .choreo-top {
+    position: absolute;
+    top: 24px; right: 24px; left: 24px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    z-index: 2;
+  }
+  .choreo-brand {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border: 1px solid var(--color-lime);
+    color: var(--color-lime);
+    animation: borderPulse 2s ease-in-out infinite;
+  }
+  @keyframes borderPulse {
+    0%, 100% { border-color: var(--color-lime); box-shadow: 0 0 0 0 var(--color-lime-glow); }
+    50%      { border-color: rgba(221,234,77,0.4); box-shadow: 0 0 0 6px rgba(221,234,77,0.06); }
+  }
+  .elapsed-timer {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--color-lime);
+    letter-spacing: 0.06em;
+  }
+  .choreo-center {
+    position: relative;
+    z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .ascii-stage {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(7px, 1.3vmin, 14px);
+    line-height: 1.0;
+    letter-spacing: 0;
+    /* Mirror cells: dim lime, sits "behind" the balls visually. */
+    color: rgba(221, 234, 77, 0.62);
+    text-shadow: 0 0 8px rgba(221,234,77,0.35);
+    white-space: pre;
+    user-select: none;
+    margin: 0;
+    text-align: left;
+  }
+  /* Ball cells: bright white-hot core with a strong lime aura, so they
+     visibly punch through the mirror background like CRT highlights. */
+  .ascii-stage .b {
+    color: #ffffff;
+    text-shadow:
+      0 0 4px #ffffff,
+      0 0 10px var(--color-lime),
+      0 0 22px var(--color-lime-glow),
+      0 0 38px rgba(221,234,77,0.35);
+  }
+  /* Motion-highlit cells in the mirror — brighter lime, no white, so the
+     user's moving hand/body trails ahead of the action. */
+  .ascii-stage .m {
+    color: #f4ffa6;
+    text-shadow:
+      0 0 6px var(--color-lime),
+      0 0 16px var(--color-lime-glow);
+  }
+  .milestone {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--color-lime);
+    text-transform: uppercase;
+    text-align: center;
+    min-height: 1.4em;
+    transition: opacity 0.35s;
+  }
+  .reference-frame {
+    position: absolute;
+    bottom: 18px; left: 18px;
+    z-index: 2;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--color-lime);
+    padding: 6px;
+    width: 130px;
+  }
+  .reference-frame .rf-label {
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em; color: var(--color-lime); text-transform: uppercase; margin-bottom: 4px;
+  }
+  .reference-frame .rf-img-wrap {
+    width: 100%; aspect-ratio: 1 / 1;
+    background: var(--surface-1);
+    overflow: hidden;
+  }
+  .reference-frame img { width: 100%; height: 100%; object-fit: contain; }
+  .reference-frame .rf-caption {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;
+    color: var(--text); margin-top: 4px; text-align: center;
+  }
+  /* Loading panel — sits opposite the reference frame so the bottom row of
+     the choreo region reads as "input (left) → status (right)". */
+  .loading-panel {
+    position: absolute;
+    bottom: 18px; right: 18px;
+    z-index: 2;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--color-lime);
+    padding: 16px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 340px;
+    font-family: var(--font-mono);
+    color: var(--color-lime);
+  }
+  .loading-panel .lp-label {
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(221,234,77,0.7);
+  }
+  .loading-panel .lp-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .loading-panel .lp-spinner {
+    font-size: 24px;
+    line-height: 1;
+    display: inline-block;
+    width: 1em;
+    text-align: center;
+    text-shadow: 0 0 10px var(--color-lime-glow);
+  }
+  .loading-panel .lp-bar {
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    color: var(--color-lime);
+    text-shadow: 0 0 8px var(--color-lime-glow);
+  }
+
+  /* ─── Result region ─── */
+  .result-region {
+    position: relative;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    background: #000;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .result-stage {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    overflow: hidden;
+    animation: resultIn 0.7s var(--ease-out) backwards;
+  }
+  @keyframes resultIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+  .result-stage img {
+    max-width: 100%; max-height: 100%;
+    width: auto; height: auto;
+    object-fit: contain;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  }
+  .result-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    column-gap: 24px;
+    padding: 16px 24px 28px;
+    animation: resultActIn 0.5s var(--ease-out) 0.4s backwards;
+  }
+  .result-stats {
+    grid-column: 1;
+    justify-self: start;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .result-stats .stat-num { color: var(--text); font-weight: 700; }
+  .result-stats .stat-sep { opacity: 0.45; margin: 0 8px; }
+  .result-actions {
+    grid-column: 2;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+  @keyframes resultActIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  #result-notice { color: var(--destructive); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; padding: 0 24px 16px; min-height: 14px; text-transform: uppercase; }
+  .qr-block {
+    grid-column: 3;
+    justify-self: end;
+    background: #fff;
+    padding: 10px 10px 6px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 10;
+    animation: qrIn 0.4s var(--ease-out) 0.6s backwards;
+  }
+  .qr-block.shown { display: flex; }
+  @keyframes qrIn { from { opacity: 0; transform: translateY(10px) scale(0.92); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .qr-img { width: 110px; height: 110px; display: block; image-rendering: pixelated; }
+  .qr-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: #000;
+    text-transform: uppercase;
+    text-align: center;
+    max-width: 110px;
+    line-height: 1.3;
+  }
+  @media (max-width: 880px) {
+    .result-bottom { grid-template-columns: 1fr; row-gap: 12px; }
+    .result-stats { justify-self: center; white-space: normal; text-align: center; }
+    .result-actions { justify-self: center; }
+    .qr-block { justify-self: center; }
+  }
+  .result-error {
+    text-align: center;
+    padding: 32px;
+    border: 1px solid var(--destructive);
+    color: var(--destructive);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    max-width: 80%;
+  }
+
+  /* ─── Confetti ─── */
+  .confetti {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 5;
+  }
+  .confetti span {
+    position: absolute;
+    top: -20px;
+    width: 8px; height: 14px;
+    background: var(--color-lime);
+    animation: confettiDrop 2.5s linear forwards;
+    opacity: 0.9;
+  }
+  .confetti span:nth-child(odd) { background: #fff; }
+  @keyframes confettiDrop {
+    to { transform: translateY(105vh) rotate(540deg); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .confetti { display: none; }
+  }
+
+  /* ─── Architecture nav link ─── */
+  .arch-link {
+    position: absolute;
+    top: 18px; right: 24px;
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; z-index: 50;
+    padding: 4px 10px; border: 1px solid var(--border-soft);
+    transition: color .15s, border-color .15s;
+  }
+  .arch-link:hover { color: var(--color-lime); border-color: var(--color-lime); }
+
+  /* ─── Result countdown ─── */
+  .result-countdown {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-align: center; padding: 0 24px 8px;
+  }
+  .result-countdown .cd-num { color: var(--color-lime); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<main class="workspace" id="workspace" data-state="capture">
+
+  <div class="wordmark"><span class="dot"></span>GMI × WORLD CUP 2026</div>
+  <a href="/architecture" class="arch-link">Architecture ↗</a>
+
+  <!-- ════ Capture state ════ -->
+  <section class="region cam-region" aria-label="Camera">
+    <div class="cam-stage" id="cam-stage">
+      <div class="cam-placeholder" id="cam-placeholder">Initializing camera…</div>
+      <video id="video" autoplay playsinline muted class="mirror" style="display:none"></video>
+      <div class="cam-overlay" id="cam-overlay" style="display:none">
+        <span class="vf-bracket tl"></span>
+        <span class="vf-bracket tr"></span>
+        <span class="vf-bracket bl"></span>
+        <span class="vf-bracket br"></span>
+        <div class="cam-hint">Step 1 · Photograph your group</div>
+        <div class="capture-dock">
+          <div class="label">Look at the camera</div>
+          <button id="capture-btn" class="btn-primary"><i class="px px-camera"></i>Capture photo</button>
+        </div>
+      </div>
+      <div class="countdown-overlay" id="countdown-overlay" style="display:none">
+        <div class="countdown-num" id="countdown-num">3</div>
+        <button class="link-ghost" id="countdown-cancel"><i class="px px-close"></i> Cancel</button>
+      </div>
+      <div class="flash-overlay" id="flash-overlay"></div>
+    </div>
+  </section>
+
+  <!-- ════ Photo (with faces) region ════ -->
+  <section class="region photo-region" aria-label="Captured photo and detected faces">
+    <div class="photo-frame" id="photo-frame">
+      <img id="photo-img" class="photo" alt="captured">
+      <button id="redo-photo-btn" class="redo-photo-btn" type="button" title="Retake photo">
+        <i class="px px-reload"></i><span>REDO PHOTO</span>
+      </button>
+    </div>
+    <div class="faces-strip" id="faces-strip"></div>
+  </section>
+
+  <!-- ════ Picker region ════ -->
+  <section class="region picker-region" aria-label="Pick your country">
+    <div class="picker-header">Pick your country</div>
+    <div class="country-grid" id="grid"></div>
+  </section>
+
+  <!-- ════ Hidden action region — generation auto-fires on country pick. ════
+       Kept in DOM so existing JS hooks (#gen-btn, #gen-status, #kit-indicator)
+       remain valid; CSS hides the section in all states. -->
+  <section class="region action-region" hidden aria-hidden="true">
+    <div class="kit-indicator" id="kit-indicator"></div>
+    <div class="action-cta">
+      <button id="gen-btn" type="button"><span class="gen-label"></span></button>
+      <div id="gen-status"></div>
+    </div>
+  </section>
+
+  <!-- ════ Choreo region ════ -->
+  <section class="region choreo-region" aria-label="Generating team photo">
+    <div class="pitch-bg"></div>
+    <div class="choreo-top">
+      <div class="choreo-brand">⚡ GMI Inference Queue</div>
+      <div class="elapsed-timer" id="elapsed-timer">00:00</div>
+    </div>
+    <div class="choreo-center">
+      <pre class="ascii-stage" id="ascii-stage" aria-hidden="true"></pre>
+      <div class="milestone" id="milestone">Initializing…</div>
+    </div>
+    <div class="reference-frame">
+      <div class="rf-label">Reference frame</div>
+      <div class="rf-img-wrap"><img id="rf-img" alt=""></div>
+      <div class="rf-caption" id="rf-caption"></div>
+    </div>
+    <div class="loading-panel" aria-live="polite">
+      <div class="lp-label">Inference status</div>
+      <div class="lp-row">
+        <span class="lp-spinner" id="lp-spinner">⠋</span>
+        <span id="lp-text">Generating…</span>
+      </div>
+      <div class="lp-bar" id="lp-bar">[                  ]</div>
+    </div>
+  </section>
+
+  <!-- ════ Result region ════ -->
+  <section class="region result-region">
+    <div class="result-stage" id="result-stage"></div>
+    <div id="result-notice"></div>
+    <div id="result-countdown" class="result-countdown" style="display:none">Returning to camera in <span id="cd-num" class="cd-num">60</span>s</div>
+    <div class="result-bottom">
+      <div id="result-stats" class="result-stats"></div>
+      <div class="result-actions">
+        <button id="download-btn" class="btn-primary"><i class="px px-download"></i>Download</button>
+        <button id="restart-btn" class="btn-outline"><i class="px px-reload"></i>Start over</button>
+        <button id="retry-btn" class="btn-outline" style="display:none"><i class="px px-reload"></i>Retry</button>
+      </div>
+      <div id="qr-block" class="qr-block">
+        <img id="qr-img" class="qr-img" alt="QR code">
+        <div class="qr-label">Scan to open<br>on your phone</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- floating upload escape hatch -->
+  <label for="file-upload" class="upload-link"><i class="px px-image-plus"></i>Upload image</label>
+  <input type="file" id="file-upload" accept="image/*" hidden>
+
+  <canvas id="work" hidden></canvas>
+</main>
+
+<script type="module">
+import { FilesetResolver, FaceDetector } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+const MAX_FACES = 11;
+const COLOR_WORDS = [
+  ["white",      255,255,255], ["black", 10,10,10], ["red", 220,30,30], ["dark red", 140,15,15],
+  ["maroon",     130,30,50],   ["pink", 240,140,170], ["orange", 250,130,30], ["gold", 250,200,40],
+  ["yellow",     250,225,40],  ["light green", 130,210,130], ["green", 30,150,60], ["dark green", 10,80,40],
+  ["teal",       30,150,150],  ["light blue", 130,180,230], ["sky blue", 90,170,220], ["blue", 30,90,200],
+  ["navy",       20,40,100],   ["purple", 130,60,160], ["brown", 120,70,40], ["grey", 150,150,150],
+];
+
+const state = {
+  countries: [],
+  country: null,
+  photoDataUrl: null,
+  photoId: null,
+  photoSource: null,
+  faces: [],
+  collageDataUrl: null,
+  generatedUrl: null,
+  resultUrl: null,
+  visionTokens: 0,
+  genTokens: 0,
+  genElapsed: null,
+  totalPhotos: null,
+  verifiedCount: null,
+  mismatch: false,
+  compositeBlobUrl: null,
+  generating: false,
+  stream: null,
+  detector: null,
+  detectorReady: null,
+  captureAbort: null,
+  choreoTimers: [],
+  choreoStart: 0,
+};
+
+const $ = id => document.getElementById(id);
+const workspace = $("workspace");
+
+// ════════ State machine ════════
+function setState(name) {
+  workspace.setAttribute("data-state", name);
+  if (name === "capture") {
+    startCamera().catch(() => {});
+  } else if (name === "result") {
+    // Free the camera once the user reaches the final image.
+    // The generating state keeps the stream so we can render the ASCII mirror.
+    stopCamera();
+  }
+  if (name === "generating") {
+    startChoreo();
+  } else {
+    stopChoreo();
+  }
+}
+
+function startOver() {
+  if (state.generating) return;
+  clearResultCountdown();
+  // Clear all derived state
+  state.country = null;
+  state.photoDataUrl = null;
+  state.photoId = null;
+  state.photoSource = null;
+  state.faces = [];
+  state.collageDataUrl = null;
+  state.generatedUrl = null;
+  state.resultUrl = null;
+  state.visionTokens = 0;
+  state.genTokens = 0;
+  state.genElapsed = null;
+  state.verifiedCount = null;
+  state.mismatch = false;
+  if (state.compositeBlobUrl) { URL.revokeObjectURL(state.compositeBlobUrl); state.compositeBlobUrl = null; }
+  cancelAutoAdvance(true);
+  // Clear DOM (photo-frame may have been replaced by the no-faces fallback — restore the <img>)
+  $("faces-strip").innerHTML = "";
+  $("photo-frame").innerHTML = `<img id="photo-img" class="photo" alt="captured"><button id="redo-photo-btn" class="redo-photo-btn" type="button" title="Retake photo"><i class="px px-reload"></i><span>REDO PHOTO</span></button>`;
+  $("redo-photo-btn").addEventListener("click", startOver);
+  $("result-stage").innerHTML = "";
+  $("result-notice").textContent = "";
+  $("result-stats").innerHTML = "";
+  $("retry-btn").style.display = "none";
+  hideQR();
+  document.querySelectorAll(".face-flyer").forEach(f => f.remove());
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("selected","dimmed"));
+  renderKitIndicator();
+  updateActionBar();
+  // Reset capture UI — if the camera is still alive (returning from
+  // generating via redo), show the live overlay immediately instead of
+  // flashing the "Initializing camera…" placeholder.
+  $("countdown-overlay").style.display = "none";
+  if (state.stream) {
+    $("cam-placeholder").style.display = "none";
+    $("video").style.display = "block";
+    $("cam-overlay").style.display = "flex";
+  } else {
+    $("cam-placeholder").style.display = "block";
+    $("cam-placeholder").textContent = "Initializing camera…";
+    $("video").style.display = "none";
+    $("cam-overlay").style.display = "none";
+  }
+  setState("capture");
+}
+
+// ════════ Camera ════════
+const video = $("video");
+const placeholder = $("cam-placeholder");
+const camOverlay = $("cam-overlay");
+const captureBtn = $("capture-btn");
+const countdownOverlay = $("countdown-overlay");
+const countdownNum = $("countdown-num");
+const countdownCancel = $("countdown-cancel");
+const flashOverlay = $("flash-overlay");
+
+async function startCamera() {
+  if (state.stream) return;
+  try {
+    placeholder.textContent = "Requesting camera…";
+    placeholder.style.display = "block";
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+      audio: false,
+    });
+    state.stream = stream;
+    video.srcObject = stream;
+    placeholder.style.display = "none";
+    video.style.display = "block";
+    camOverlay.style.display = "flex";
+  } catch (e) {
+    placeholder.style.display = "block";
+    placeholder.innerHTML = `Camera blocked (${e.name || "error"}).<br>Use the ↑ Upload image link, or grant permission and reload.`;
+    camOverlay.style.display = "none";
+    throw e;
+  }
+}
+function stopCamera() {
+  if (state.stream) {
+    state.stream.getTracks().forEach(t => t.stop());
+    state.stream = null;
+  }
+  video.srcObject = null;
+}
+
+captureBtn.addEventListener("click", runCaptureCountdown);
+countdownCancel.addEventListener("click", () => state.captureAbort?.abort());
+
+async function runCaptureCountdown() {
+  if (!state.stream || !video.videoWidth) return;
+  state.captureAbort = new AbortController();
+  const signal = state.captureAbort.signal;
+  camOverlay.style.display = "none";
+  countdownOverlay.style.display = "flex";
+  try {
+    for (let n = 3; n >= 1; n--) {
+      countdownNum.textContent = String(n);
+      // Restart the CSS animation
+      countdownNum.style.animation = "none";
+      void countdownNum.offsetWidth;
+      countdownNum.style.animation = "";
+      await wait(1000, signal);
+    }
+    countdownOverlay.style.display = "none";
+    flashOverlay.classList.remove("firing");
+    void flashOverlay.offsetWidth;
+    flashOverlay.classList.add("firing");
+    // Snapshot
+    const canvas = $("work");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    state.photoDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    state.photoSource = "camera";
+    await transitionToReady();
+  } catch (e) {
+    // Aborted
+    countdownOverlay.style.display = "none";
+    camOverlay.style.display = "flex";
+  } finally {
+    state.captureAbort = null;
+  }
+}
+
+function wait(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(resolve, ms);
+    if (signal) signal.addEventListener("abort", () => { clearTimeout(t); reject(new DOMException("aborted", "AbortError")); });
+  });
+}
+
+// ════════ Upload escape hatch ════════
+$("file-upload").addEventListener("change", e => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    state.photoDataUrl = ev.target.result;
+    state.photoSource = "upload";
+    await transitionToReady();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = "";
+});
+
+// ════════ Capture → Ready transition ════════
+async function transitionToReady() {
+  // Render the photo into photo-frame, build empty face tiles, run detection,
+  // animate face crops flying from bbox positions into tile positions.
+  ensureDetectorReady();
+  $("photo-img").src = state.photoDataUrl;
+  // Render the country grid in case we haven't yet (we have, on boot)
+  // Move to ready layout, but render tiles first so we can measure them
+  setState("ready");
+  const img = await loadImage(state.photoDataUrl);
+  // Persist the original photo to Supabase. Fire-and-forget — we don't gate
+  // detection/vision/generate on the DB round trip. photoId is null if the
+  // backend is unconfigured or the call fails.
+  persistPhoto(img.naturalWidth, img.naturalHeight);
+
+  await ensureDetectorReady();
+  const result = state.detector.detect(img);
+  let detections = (result.detections || []).map(d => ({
+    x: d.boundingBox.originX, y: d.boundingBox.originY, w: d.boundingBox.width, h: d.boundingBox.height,
+  })).sort((a, b) => a.x - b.x);
+
+  let droppedTooMany = false;
+  if (detections.length > MAX_FACES) {
+    detections = [...detections].sort((a, b) => (b.w * b.h) - (a.w * a.h)).slice(0, MAX_FACES);
+    detections.sort((a, b) => a.x - b.x);
+    droppedTooMany = true;
+  }
+  if (detections.length === 0) {
+    showNoFaces();
+    return;
+  }
+
+  // Build face objects + tiles + bounding boxes (boxes visible immediately, tiles initially empty/hidden image)
+  state.faces = await Promise.all(detections.map(async (bb, i) => {
+    const crop = await cropFace(img, bb);
+    return { id: i + 1, bbox: bb, cropDataUrl: crop, attributes: null, attrStatus: "pending", include: true };
+  }));
+
+  drawBoundingBoxes(img.naturalWidth, img.naturalHeight);
+  buildFaceTiles();
+  // Two RAFs to ensure layout is settled before we measure
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await flyFacesToStrip();
+  // Vision calls in parallel
+  state.faces.forEach(face => fireVision(face));
+  updateActionBar();
+}
+
+function showNoFaces() {
+  const frame = $("photo-frame");
+  frame.innerHTML = `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding:32px; text-align:center;">
+      <div style="font-family: var(--font-display); font-weight:700; font-size: 22px; color: var(--destructive); letter-spacing: 0.08em; text-transform: uppercase;">No faces detected</div>
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;">Try better lighting and face the camera.</div>
+      <button class="btn-outline" id="retake-btn">Retake</button>
+    </div>`;
+  document.getElementById("retake-btn").addEventListener("click", startOver);
+}
+
+function drawBoundingBoxes(w, h) {
+  const frame = $("photo-frame");
+  frame.querySelectorAll(".box").forEach(b => b.remove());
+  state.faces.forEach((face, i) => {
+    const div = document.createElement("div");
+    div.className = "box";
+    div.id = `bbox-${face.id}`;
+    div.style.left   = (face.bbox.x / w * 100) + "%";
+    div.style.top    = (face.bbox.y / h * 100) + "%";
+    div.style.width  = (face.bbox.w / w * 100) + "%";
+    div.style.height = (face.bbox.h / h * 100) + "%";
+    div.style.animationDelay = (i * 60) + "ms";
+    div.innerHTML = `<div class="chip">P${face.id}</div>`;
+    frame.appendChild(div);
+  });
+}
+
+function buildFaceTiles() {
+  const strip = $("faces-strip");
+  strip.innerHTML = "";
+  state.faces.forEach(face => {
+    const tile = document.createElement("div");
+    tile.className = "face-tile";
+    tile.id = `face-${face.id}`;
+    tile.innerHTML = `
+      <div class="tile-img-wrap" id="tile-img-${face.id}"></div>
+      <div class="inc-check" data-face-id="${face.id}"><i class="px px-check"></i></div>
+      <div class="tile-foot">
+        <span class="tile-num">P${face.id}</span>
+        <span class="status-pill" id="status-${face.id}"><span class="mini-spin"></span></span>
+      </div>`;
+    strip.appendChild(tile);
+    tile.querySelector(".inc-check").addEventListener("click", () => {
+      face.include = !face.include;
+      tile.classList.toggle("excluded", !face.include);
+      cancelAutoAdvance(true);
+      updateActionBar();
+    });
+  });
+}
+
+async function flyFacesToStrip() {
+  // Read photo-frame rect and bbox screen positions; read each tile rect.
+  // Animate a copy of each crop from bbox rect to tile rect.
+  const frame = $("photo-frame");
+  const photoImg = $("photo-img");
+  // Make sure the photo-img is fully decoded so its rendered rect is correct.
+  if (!photoImg.complete || !photoImg.naturalWidth) {
+    await new Promise(res => { photoImg.onload = res; photoImg.onerror = res; });
+  }
+  if (photoImg.decode) { try { await photoImg.decode(); } catch {} }
+  const photoRect = photoImg.getBoundingClientRect();
+  const promises = [];
+  for (let i = 0; i < state.faces.length; i++) {
+    const face = state.faces[i];
+    // Compute the bbox's actual pixel rect within the rendered photo
+    const w = photoImg.naturalWidth, h = photoImg.naturalHeight;
+    const scaleX = photoRect.width / w;
+    const scaleY = photoRect.height / h;
+    const fromX = photoRect.left + face.bbox.x * scaleX;
+    const fromY = photoRect.top  + face.bbox.y * scaleY;
+    const fromW = face.bbox.w * scaleX;
+    const fromH = face.bbox.h * scaleY;
+    const tileWrap = document.getElementById(`tile-img-${face.id}`);
+    const toRect = tileWrap.getBoundingClientRect();
+    // Build a flyer
+    const flyer = document.createElement("img");
+    flyer.className = "face-flyer";
+    flyer.src = face.cropDataUrl;
+    flyer.style.width  = fromW + "px";
+    flyer.style.height = fromH + "px";
+    flyer.style.left = "0";
+    flyer.style.top  = "0";
+    flyer.style.transform = `translate(${fromX}px, ${fromY}px) scale(1)`;
+    document.body.appendChild(flyer);
+
+    const scale = toRect.width / Math.max(fromW, 1);
+    const target = `translate(${toRect.left}px, ${toRect.top}px) scale(${scale})`;
+    const p = flyer.animate(
+      [
+        { transform: flyer.style.transform, opacity: 1, offset: 0 },
+        { transform: `translate(${(fromX + toRect.left) / 2}px, ${(fromY + toRect.top) / 2 - 30}px) scale(${(1 + scale) / 2})`, opacity: 1, offset: 0.5 },
+        { transform: target, opacity: 1, offset: 1 },
+      ],
+      { duration: 720, easing: "cubic-bezier(.2,.9,.3,1.2)", fill: "forwards", delay: i * 140 }
+    );
+    promises.push(p.finished.then(() => {
+      // Land: insert the real image into the tile wrap
+      tileWrap.innerHTML = `<img src="${face.cropDataUrl}" alt="face ${face.id}">`;
+      flyer.remove();
+    }));
+  }
+  await Promise.all(promises.map(p => p.catch(() => {})));
+}
+
+// ════════ Persist captured photo to Supabase (fire-and-forget) ════════
+async function persistPhoto(width, height) {
+  try {
+    const r = await fetch("/api/photos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image: state.photoDataUrl,
+        width, height,
+        source: state.photoSource || "camera",
+      }),
+    });
+    const j = await r.json();
+    if (j.photo_id) state.photoId = j.photo_id;
+  } catch (e) {
+    // Non-fatal — DB write failed but the session continues normally.
+  }
+}
+
+// ════════ Vision (per-face attribute extraction) ════════
+function fireVision(face) {
+  fetch("/api/vision", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      image: face.cropDataUrl,
+      photo_id: state.photoId,
+      face_index: face.id - 1,
+      bbox: face.bbox,
+    }),
+  })
+    .then(r => r.json().then(j => ({ ok: r.ok, j })))
+    .then(({ ok, j }) => {
+      if (ok && j.attributes) {
+        face.attributes = j.attributes;
+        face.attrStatus = "ok";
+        if (typeof j.tokens === "number") state.visionTokens += j.tokens;
+      } else {
+        face.attrStatus = "err";
+        face.attrError = j.error || "vision failed";
+      }
+      refreshFaceTileStatus(face);
+      updateActionBar();
+    })
+    .catch(e => {
+      face.attrStatus = "err";
+      face.attrError = e.message;
+      refreshFaceTileStatus(face);
+      updateActionBar();
+    });
+}
+
+function refreshFaceTileStatus(face) {
+  const pill = document.getElementById(`status-${face.id}`);
+  if (!pill) return;
+  pill.classList.remove("ok", "err");
+  if (face.attrStatus === "ok") {
+    pill.classList.add("ok");
+    pill.innerHTML = `<i class="px px-check"></i>`;
+  } else if (face.attrStatus === "err") {
+    pill.classList.add("err");
+    pill.innerHTML = `<i class="px px-close"></i>`;
+  }
+}
+
+// ════════ Face crop (tighter padding) ════════
+async function cropFace(img, bb) {
+  const padTop = 0.45, padBottom = 0.55, padSides = 0.35;
+  const cx = bb.x + bb.w / 2;
+  const cy = bb.y + bb.h / 2;
+  const desiredW = bb.w * (1 + 2 * padSides);
+  const desiredH = bb.h * (1 + padTop + padBottom);
+  let side = Math.max(desiredW, desiredH);
+  const verticalBias = bb.h * 0.06;
+  side = Math.min(side, img.naturalWidth, img.naturalHeight);
+  let sx = Math.round(cx - side / 2);
+  let sy = Math.round(cy - side / 2 - verticalBias);
+  sx = Math.max(0, Math.min(sx, img.naturalWidth  - side));
+  sy = Math.max(0, Math.min(sy, img.naturalHeight - side));
+  const canvas = document.createElement("canvas");
+  canvas.width = 512; canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, 512, 512);
+  ctx.drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
+  return canvas.toDataURL("image/jpeg", 0.92);
+}
+
+function ensureDetectorReady() {
+  if (state.detectorReady) return state.detectorReady;
+  state.detectorReady = (async () => {
+    const fileset = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+    );
+    state.detector = await FaceDetector.createFromOptions(fileset, {
+      baseOptions: {
+        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite",
+      },
+      runningMode: "IMAGE",
+      minDetectionConfidence: 0.5,
+    });
+  })();
+  return state.detectorReady;
+}
+
+function loadImage(src) {
+  return new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res(im);
+    im.onerror = rej;
+    im.src = src;
+  });
+}
+
+// ════════ Countries / picker ════════
+async function loadCountries() {
+  const r = await fetch("/countries.json");
+  state.countries = await r.json();
+  renderGrid();
+}
+function renderGrid() {
+  const grid = $("grid");
+  grid.innerHTML = "";
+  state.countries.forEach((c, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.animationDelay = (i * 18) + "ms";
+    card.dataset.code = c.code;
+    card.innerHTML = `
+      <div class="flag"><img src="${c.flagPath}" alt="${c.name}"></div>
+      <div class="name">${c.name}</div>`;
+    card.addEventListener("click", () => pickCountry(c, card));
+    grid.appendChild(card);
+  });
+}
+
+function pickCountry(c, cardEl) {
+  state.country = c;
+  document.querySelectorAll(".card").forEach(card => {
+    if (card === cardEl) card.classList.add("selected");
+    else card.classList.add("dimmed");
+  });
+  setTimeout(() => {
+    document.querySelectorAll(".card").forEach(card => card.classList.remove("selected", "dimmed"));
+    cardEl.classList.add("selected");
+  }, 700);
+  renderKitIndicator();
+  cancelAutoAdvance(true);
+  updateActionBar();
+}
+
+function renderKitIndicator() {
+  const el = $("kit-indicator");
+  const c = state.country;
+  if (!c) { el.innerHTML = `<span class="empty">No country selected</span>`; return; }
+  el.innerHTML = `
+    <div class="kit-flag"><img src="${c.flagPath}" alt=""></div>
+    <div class="kit-name">${c.name}</div>
+    <div class="kit-swatches">
+      <div class="sw" style="background:${c.primary}"></div>
+      <div class="sw" style="background:${c.secondary}"></div>
+      <div class="sw" style="background:${c.accent}"></div>
+    </div>`;
+}
+
+// ════════ Action bar ════════
+// As soon as faces are analyzed AND a country is picked, generation fires
+// immediately — no 3-second hold. Idempotent guard prevents double-fire.
+function cancelAutoAdvance() { /* kept as a no-op so existing call sites compile */ }
+
+function updateActionBar() {
+  const btn = $("gen-btn");
+  const status = $("gen-status");
+  if (!btn) return;
+  const included = state.faces.filter(f => f.include);
+  const pending = state.faces.some(f => f.include && f.attrStatus === "pending");
+  const haveCountry = !!state.country;
+  if (state.faces.length === 0) {
+    btn.disabled = true; status.textContent = "Take a photo to begin.";
+  } else if (included.length === 0) {
+    btn.disabled = true; status.textContent = "Include at least one face.";
+  } else if (!haveCountry) {
+    btn.disabled = true;
+    status.textContent = pending ? "Pick a country (still analyzing faces)…" : "Pick a country to continue.";
+  } else {
+    btn.disabled = false;
+    btn.querySelector(".gen-label").textContent = `Generate ${included.length}-player team photo`;
+    status.innerHTML = `<span class="live">Generating now…</span>`;
+    // Fire generation as soon as a country is picked, even if vision is still
+    // in flight — runGeneration holds on the choreo screen until vision settles.
+    if (!state.generating && document.getElementById("workspace").dataset.state === "ready") {
+      runGeneration();
+    }
+  }
+}
+
+$("gen-btn").addEventListener("click", runGeneration);
+
+// ════════ Collage builder ════════
+function pickLayout(n) {
+  if (n <= 1)  return { cols: 1, rows: 1 };
+  if (n === 2) return { cols: 2, rows: 1 };
+  if (n === 3) return { cols: 3, rows: 1 };
+  if (n === 4) return { cols: 2, rows: 2 };
+  if (n <= 6)  return { cols: 3, rows: 2 };
+  if (n <= 9)  return { cols: 3, rows: 3 };
+  return { cols: 4, rows: 3 };
+}
+async function buildCollage(includedFaces) {
+  // 768 instead of 1024: smaller payload (~50% less to upload) with no
+  // visible quality difference at the post-edit 1024 output resolution.
+  const W = 768, H = 768;
+  const { cols, rows } = pickLayout(includedFaces.length);
+  const gutter = 10, labelBarH = 26;
+  const cellW = Math.floor((W - gutter * (cols + 1)) / cols);
+  const cellH = Math.floor((H - gutter * (rows + 1)) / rows);
+  const tileImgH = cellH - labelBarH;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, W, H);
+  const imgs = await Promise.all(includedFaces.map(f => loadImage(f.cropDataUrl)));
+  for (let i = 0; i < includedFaces.length; i++) {
+    const c = i % cols, r = Math.floor(i / cols);
+    const x = gutter + c * (cellW + gutter);
+    const y = gutter + r * (cellH + gutter);
+    ctx.fillStyle = "#fff"; ctx.fillRect(x, y, cellW, tileImgH);
+    drawCover(ctx, imgs[i], x, y, cellW, tileImgH);
+    ctx.fillStyle = "#FFFFFF"; ctx.fillRect(x, y + tileImgH, cellW, labelBarH);
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 16px -apple-system, Arial, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(`Player ${includedFaces[i].id}`, x + cellW / 2, y + tileImgH + labelBarH / 2);
+    ctx.strokeStyle = "#cccccc"; ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, cellW - 1, cellH - 1);
+  }
+  // JPEG is roughly 5-10x smaller than PNG for photographic content and the
+  // model accepts data:image/jpeg too.
+  return canvas.toDataURL("image/jpeg", 0.88);
+}
+function drawCover(ctx, img, x, y, w, h) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const cr = w / h;
+  let sx, sy, sw, sh;
+  if (ir > cr) { sh = img.naturalHeight; sw = Math.round(sh * cr); sx = Math.round((img.naturalWidth - sw) / 2); sy = 0; }
+  else         { sw = img.naturalWidth;  sh = Math.round(sw / cr); sx = 0; sy = Math.round((img.naturalHeight - sh) / 2); }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
+// ════════ Color words + prompt ════════
+function hexToRgb(hex) { const h = hex.replace("#",""); return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) }; }
+function colorWord(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  let best = COLOR_WORDS[0], bestD = Infinity;
+  for (const [name, R, G, B] of COLOR_WORDS) {
+    const d = (r-R)**2 + (g-G)**2 + (b-B)**2;
+    if (d < bestD) { bestD = d; best = [name, R, G, B]; }
+  }
+  return best[0];
+}
+function buildPrompt(country, includedFaces) {
+  const N = includedFaces.length;
+  const primaryWord   = colorWord(country.primary);
+  const secondaryWord = colorWord(country.secondary);
+  const accentWord    = colorWord(country.accent || country.secondary);
+  const patternClause = country.pattern ? `, featuring ${country.pattern}` : "";
+  let backN, frontN;
+  if (N <= 4) { backN = N; frontN = 0; }
+  else if (N === 5) { backN = 3; frontN = 2; }
+  else if (N === 6) { backN = 3; frontN = 3; }
+  else if (N === 7) { backN = 4; frontN = 3; }
+  else if (N === 8) { backN = 4; frontN = 4; }
+  else if (N === 9) { backN = 5; frontN = 4; }
+  else if (N === 10){ backN = 5; frontN = 5; }
+  else              { backN = 6; frontN = 5; }
+  const guide = includedFaces.map((f, i) => {
+    const a = f.attributes || {};
+    const ageGen = `${a.apparent_age_band || "adult"} ${a.apparent_gender_presentation || "person"}`;
+    const hair = a.hair || "natural hair";
+    const fh   = a.facial_hair && a.facial_hair !== "none" ? a.facial_hair : "no facial hair";
+    const gl   = a.glasses ? "wearing glasses" : "no glasses";
+    const skin = a.skin_tone ? `${a.skin_tone} skin` : "natural skin tone";
+    const dist = a.distinguishing ? `, ${a.distinguishing}` : "";
+    const row  = i < backN ? "back row (standing)" : "front row (crouching)";
+    return `- Player ${f.id} — ${row}: ${ageGen}, ${hair}, ${fh}, ${gl}, ${skin}${dist}.`;
+  }).join("\n");
+  const formationLine = frontN === 0
+    ? `A single row of exactly ${N} players standing shoulder-to-shoulder, arms at their sides or behind their backs.`
+    : `Exactly ${backN} players in the BACK ROW standing upright shoulder-to-shoulder with arms around each other's shoulders or behind their backs, and exactly ${frontN} players in the FRONT ROW crouching on one knee with hands resting on the front knee.`;
+  return [
+    `OFFICIAL FIFA PRE-MATCH TEAM PHOTOGRAPH of the ${country.name} national football team, posing on the pitch of a packed modern football stadium just before kickoff. Wide horizontal photograph, taken from chest level, full squad centered.`,
+    "",
+    `CRITICAL CONSTRAINT: The photo must contain EXACTLY ${N} ${N === 1 ? "player" : "players"} — no goalkeeper in a different kit, no coaches, no referees, no extra people, no missing people. Count: ${N}.`,
+    "",
+    `KIT (all ${N} players wear identical home uniforms): ${primaryWord} ${country.name} jersey (color ${country.primary}) with ${secondaryWord} trim on the collar and sleeves (color ${country.secondary}), matching ${secondaryWord} shorts, ${secondaryWord}/${accentWord} socks. Modern athletic fit, short sleeves, national crest on left chest, manufacturer swoosh on right chest${patternClause}. No sponsor text on the shirt front.`,
+    "",
+    `FORMATION: ${formationLine}`,
+    "",
+    `REFERENCE IMAGE: a white-background grid of ${N} labeled portrait tiles, "Player 1" through "Player ${N}". For each label, PRESERVE THE EXACT IDENTITY of that person — face shape, eye shape and color, nose, mouth, jawline, hairstyle, hair color, skin tone, ears, glasses, freckles, moles, facial hair. Treat each tile as a portrait of a specific real individual. Do not blend faces. Do not invent or substitute faces. Place each person in numbered order: Player 1 leftmost in the back row, continuing left-to-right through the back row, then continuing left-to-right through the front row, ending with Player ${N} rightmost in the front row.`,
+    "",
+    "PER-PLAYER GUIDE:",
+    guide,
+    "",
+    `EXPRESSION: light, gentle, closed-mouth smile — soft and natural, lips together, NO TEETH SHOWING, no grin. Eyes relaxed, looking at the camera. Arms in the formation pose. No celebratory poses.`,
+    "",
+    `BACKGROUND: blurred view of a large floodlit football stadium with a packed crowd. Green grass pitch. Bright stadium lighting.`,
+    "",
+    `STYLE: ultra-photorealistic sports photography, 35mm full-frame, 50mm prime lens, f/4, ISO 400, mild depth of field, players sharp and crowd softly blurred. No text, no captions, no scoreboards, no flags overlaid in foreground.`,
+  ].join("\n");
+}
+
+// ════════ Generation ════════
+async function runGeneration() {
+  const included = state.faces.filter(f => f.include);
+  if (!included.length || !state.country) return;
+  if (state.generating) return;
+  cancelAutoAdvance(true);
+  if (state.compositeBlobUrl) { URL.revokeObjectURL(state.compositeBlobUrl); state.compositeBlobUrl = null; }
+  state.generating = true;
+  setState("generating");
+  try {
+    // If vision is still in flight, hold on the choreo screen with an honest
+    // milestone + caption tick until every included face settles. Without this,
+    // picking a country while vision is mid-run looks like nothing happened.
+    if (included.some(f => f.attrStatus === "pending")) {
+      const noun = included.length === 1 ? "player" : "players";
+      const milestoneEl = $("milestone");
+      const refCap = $("rf-caption");
+      // Pin both labels on every tick so the existing 5.5s milestone interval
+      // (cycling generation-themed strings) can't drift to a misleading message
+      // while vision is still in flight.
+      await new Promise(resolve => {
+        const tick = () => {
+          const stillPending = included.filter(f => f.attrStatus === "pending").length;
+          if (stillPending === 0) { resolve(); return; }
+          milestoneEl.style.opacity = "1";
+          milestoneEl.textContent = `Analyzing ${noun}…`;
+          refCap.textContent = `Analyzing ${included.length - stillPending}/${included.length}`;
+          setTimeout(tick, 150);
+        };
+        tick();
+      });
+    }
+    const collage = await buildCollage(included);
+    state.collageDataUrl = collage;
+    $("rf-img").src = collage;
+    $("rf-caption").textContent = `${included.length}/${included.length} players locked`;
+    const prompt = buildPrompt(state.country, included);
+    const r = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        country_code: state.country.code,
+        country_name: state.country.name,
+        prompt, reference_image: collage,
+        n_people: included.length,
+        photo_id: state.photoId,
+        // Skip the post-gen vision count check — saves another ~3-5 s LLM
+        // round trip; visible mismatch is rare for the typical N=1-3 case.
+        skip_verify: true,
+      }),
+    });
+    const j = await r.json();
+    if (!r.ok || !j.image_url) throw new Error(j.error || `HTTP ${r.status}`);
+    state.generatedUrl = j.image_url;
+    state.resultUrl = j.result_url || null;
+    state.genElapsed = typeof j.elapsed === "number" ? j.elapsed : null;
+    state.genTokens = typeof j.tokens === "number" ? j.tokens : 0;
+    state.verifiedCount = j.verified_count;
+    state.mismatch = !!j.mismatch;
+    await revealResult();
+  } catch (e) {
+    showGenerationError(e.message);
+  } finally {
+    state.generating = false;
+  }
+}
+
+function showGenerationError(message) {
+  setState("result");
+  $("result-stage").innerHTML = `<div class="result-error">Generation failed: ${message}</div>`;
+  $("result-notice").textContent = "";
+  $("result-stats").innerHTML = "";
+  $("retry-btn").style.display = "inline-block";
+  hideQR();
+}
+
+async function revealResult() {
+  setState("result");
+  const stage = $("result-stage");
+  stage.innerHTML = "";
+  try {
+    const composite = await buildHeaderedComposite(state.generatedUrl);
+    state.compositeBlobUrl = composite.blobUrl;
+    stage.appendChild(composite.img);
+  } catch (e) {
+    const fallback = new Image();
+    fallback.src = state.generatedUrl;
+    stage.appendChild(fallback);
+  }
+  $("retry-btn").style.display = "none";
+  if (state.mismatch) {
+    $("result-notice").textContent = `Heads up: rendered ${state.verifiedCount ?? "?"} ${state.verifiedCount === 1 ? "person" : "people"}; expected ${state.faces.filter(f => f.include).length}.`;
+  } else {
+    $("result-notice").textContent = "";
+  }
+  renderStats();
+  renderQR(state.resultUrl);
+  fireConfetti();
+  startResultCountdown();
+}
+
+// ════════ Stats line on result screen ════════
+function renderStats() {
+  const el = $("result-stats");
+  if (!el) return;
+  const players = state.faces.filter(f => f.include).length;
+  const elapsed = state.genElapsed != null ? `${state.genElapsed.toFixed(1)}s` : "—";
+  const tokens = state.visionTokens + state.genTokens;
+  const tokensLabel = tokens > 0 ? `${tokens.toLocaleString()} tokens` : "— tokens";
+  const sep = '<span class="stat-sep">·</span>';
+  const tot = state.totalPhotos != null
+    ? `<span class="stat-num">${state.totalPhotos.toLocaleString()}</span> total`
+    : `<span class="stat-num">…</span> total`;
+  el.innerHTML = [
+    `<span class="stat-num">${players}</span> ${players === 1 ? "player" : "players"}`,
+    `<span class="stat-num">${elapsed}</span>`,
+    `<span class="stat-num">${tokensLabel}</span>`,
+    tot,
+  ].join(sep);
+  // Refresh total in the background — by the time it returns, this generation
+  // is already counted in the bucket list.
+  fetch("/api/stats")
+    .then(r => r.json())
+    .then(j => {
+      if (typeof j.total_photos === "number") {
+        state.totalPhotos = j.total_photos;
+        // Re-render only the total cell to avoid stale numbers being shown.
+        const updated = el.innerHTML.replace(
+          /<span class="stat-num">[^<]*<\/span> total/,
+          `<span class="stat-num">${state.totalPhotos.toLocaleString()}</span> total`,
+        );
+        el.innerHTML = updated;
+      }
+    })
+    .catch(() => {});
+}
+
+// ════════ QR code (link to Supabase-hosted result) ════════
+function renderQR(url) {
+  const block = $("qr-block");
+  const img = $("qr-img");
+  if (!url || typeof qrcode !== "function") { hideQR(); return; }
+  try {
+    // typeNumber=0 picks the smallest QR that fits the data;
+    // 'M' = ~15% error correction (works through camera glare).
+    const qr = qrcode(0, "M");
+    qr.addData(url);
+    qr.make();
+    img.src = qr.createDataURL(5, 4);  // 5px cells, 4-cell quiet zone
+    block.classList.add("shown");
+  } catch (e) {
+    hideQR();
+  }
+}
+
+function hideQR() {
+  $("qr-block").classList.remove("shown");
+  $("qr-img").src = "";
+}
+
+async function buildHeaderedComposite(gcsUrl) {
+  const teamSrc = `/api/download?inline=1&url=${encodeURIComponent(gcsUrl)}`;
+  const teamImg = await loadImage(teamSrc);
+  let frameImg = null;
+  try { frameImg = await loadImage("/svg/frame.png"); } catch {}
+  const teamW = teamImg.naturalWidth, teamH = teamImg.naturalHeight;
+  const canvas = document.createElement("canvas");
+  canvas.width = teamW; canvas.height = teamH;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(teamImg, 0, 0, teamW, teamH);
+  if (frameImg) ctx.drawImage(frameImg, 0, 0, teamW, teamH);
+  const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+  const blobUrl = URL.createObjectURL(blob);
+  const img = new Image();
+  img.src = blobUrl;
+  img.alt = "team photo";
+  return { img, blobUrl };
+}
+
+function fireConfetti() {
+  const container = document.createElement("div");
+  container.className = "confetti";
+  for (let i = 0; i < 36; i++) {
+    const s = document.createElement("span");
+    s.style.left = (Math.random() * 100) + "%";
+    s.style.animationDelay = (Math.random() * 0.6) + "s";
+    s.style.animationDuration = (1.8 + Math.random() * 1.4) + "s";
+    s.style.transform = `rotate(${Math.random() * 360}deg)`;
+    container.appendChild(s);
+  }
+  document.querySelector(".result-region")?.appendChild(container);
+  setTimeout(() => container.remove(), 3500);
+}
+
+// ════════ Choreo (generating animations) ════════
+// Live ASCII mirror of the webcam with kickable soccer balls. Wave a hand
+// near a ball and the motion in that area shoves it away. Falls back to a
+// single rotating ASCII ball when no camera stream is available (uploaded
+// photo, camera blocked, etc.).
+const ASCII_W = 128, ASCII_H = 52;
+const SHADES  = " .:-=+*#%@";
+
+// Helper canvas — sized exactly to the ASCII grid so one pixel == one cell.
+const sampleCanvas = document.createElement("canvas");
+sampleCanvas.width = ASCII_W;
+sampleCanvas.height = ASCII_H;
+const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
+
+// Ball tuning. Monospace cells are roughly width = 0.55 × height at our
+// font, so horizontal radii are stretched by CELL_ASPECT to keep balls
+// visually round.
+const N_BALLS = 4;
+const BALL_RADIUS = 3.2;
+const CELL_ASPECT = 1.8;
+const GRAVITY = 0.008;
+const FRICTION = 0.987;
+const BOUNCE_DAMP = 0.84;
+const MAX_SPEED = 1.6;
+const MOTION_THRESHOLD = 0.07;
+const MOTION_RADIUS = 7;
+const KICK_FORCE = 0.45;
+// Mirror look: stronger gamma compresses skin tones to mid-shade and lets
+// edges (eyes, jawline, hair edges) sit in the bright end → more definition.
+const MIRROR_GAMMA = 1.55;
+const MIRROR_GAIN = 0.78;
+// Motion brightens the cell on top of brightness, so a moving hand glows
+// ahead of the body. The MOTION_GLOW_THRESHOLD decides which cells get
+// promoted to the `.m` (motion) span.
+const MOTION_BRIGHT_BOOST = 1.8;
+const MOTION_GLOW_THRESHOLD = 0.12;
+
+// Procedural 3D ASCII soccer ball — kept as the no-camera fallback.
+function renderBall(t) {
+  const yaw   = t * 0.65;
+  const pitch = Math.sin(t * 0.32) * 0.35;
+  const cy = Math.cos(yaw),   sy = Math.sin(yaw);
+  const cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const Rx = ASCII_W * 0.36, Ry = ASCII_H * 0.46;
+  const cx = ASCII_W / 2,    cyP = ASCII_H / 2;
+  const out = [];
+  for (let y = 0; y < ASCII_H; y++) {
+    let line = "";
+    for (let x = 0; x < ASCII_W; x++) {
+      const nx = (x - cx) / Rx;
+      const ny = (y - cyP) / Ry;
+      const r2 = nx * nx + ny * ny;
+      if (r2 > 1.02) { line += " "; continue; }
+      const z = Math.sqrt(Math.max(0, 1 - r2));
+      let xR = nx * cy - z * sy;
+      let zR = nx * sy + z * cy;
+      let yR = ny * cp - zR * sp;
+      let zR2 = ny * sp + zR * cp;
+      const theta = Math.atan2(yR, xR);
+      const phi   = Math.atan2(Math.hypot(xR, yR), zR2);
+      const a = Math.sin(theta * 5 + Math.cos(phi * 3 + 0.4));
+      const b = Math.cos(phi * 5 - Math.sin(theta * 3));
+      const onSeam = (Math.abs(a) < 0.28) || (Math.abs(b) < 0.22);
+      const L = Math.max(0, nx * (-0.35) + ny * (-0.7) + z * 0.62);
+      const brightness = Math.max(0, Math.min(0.999, L * (onSeam ? 0.18 : 1.0)));
+      const i = Math.floor(brightness * SHADES.length);
+      line += SHADES[i];
+    }
+    out.push(line);
+  }
+  return out.join("\n");
+}
+
+function sampleMirrorBrightness(videoEl) {
+  if (!videoEl.videoWidth || !videoEl.videoHeight) return null;
+  // Mirror horizontally so the user's motion matches the on-screen reflection.
+  sampleCtx.save();
+  sampleCtx.translate(ASCII_W, 0);
+  sampleCtx.scale(-1, 1);
+  sampleCtx.drawImage(videoEl, 0, 0, ASCII_W, ASCII_H);
+  sampleCtx.restore();
+  const data = sampleCtx.getImageData(0, 0, ASCII_W, ASCII_H).data;
+  const out = new Float32Array(ASCII_W * ASCII_H);
+  for (let i = 0, p = 0; i < out.length; i++, p += 4) {
+    out[i] = (0.299 * data[p] + 0.587 * data[p + 1] + 0.114 * data[p + 2]) / 255;
+  }
+  return out;
+}
+
+function makeBalls() {
+  const balls = [];
+  for (let i = 0; i < N_BALLS; i++) {
+    balls.push({
+      x: 12 + (i + 0.5) * (ASCII_W - 24) / N_BALLS,
+      y: 3 + Math.random() * 4,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: 0,
+      spin: Math.random() * Math.PI * 2,
+    });
+  }
+  return balls;
+}
+
+function updateBalls(balls, motion) {
+  const rX = BALL_RADIUS * CELL_ASPECT;
+  const rY = BALL_RADIUS;
+  for (const b of balls) {
+    b.vy += GRAVITY;
+
+    // Kick: sample the motion field in a small box around the ball and push
+    // away from the motion centroid — a hand moving toward the ball flicks it.
+    if (motion) {
+      let mx = 0, my = 0, mTotal = 0;
+      const cx0 = Math.round(b.x), cy0 = Math.round(b.y);
+      for (let dy = -MOTION_RADIUS; dy <= MOTION_RADIUS; dy++) {
+        for (let dx = -MOTION_RADIUS; dx <= MOTION_RADIUS; dx++) {
+          const px = cx0 + dx, py = cy0 + dy;
+          if (px < 0 || px >= ASCII_W || py < 0 || py >= ASCII_H) continue;
+          const m = motion[py * ASCII_W + px];
+          if (m < MOTION_THRESHOLD) continue;
+          const w = m / (dx * dx + dy * dy + 1);
+          mx += dx * w;
+          my += dy * w;
+          mTotal += w;
+        }
+      }
+      if (mTotal > 0.04) {
+        b.vx -= (mx / mTotal) * KICK_FORCE;
+        b.vy -= (my / mTotal) * KICK_FORCE;
+      }
+    }
+
+    b.x += b.vx;
+    b.y += b.vy;
+    b.spin += b.vx * 0.22;
+
+    if (b.x < rX)                { b.x = rX;             b.vx =  Math.abs(b.vx) * BOUNCE_DAMP; }
+    else if (b.x > ASCII_W - rX) { b.x = ASCII_W - rX;   b.vx = -Math.abs(b.vx) * BOUNCE_DAMP; }
+    if (b.y < rY)                { b.y = rY;             b.vy =  Math.abs(b.vy) * BOUNCE_DAMP; }
+    else if (b.y > ASCII_H - rY) { b.y = ASCII_H - rY;   b.vy = -Math.abs(b.vy) * BOUNCE_DAMP; b.vx *= 0.95; }
+
+    b.vx *= FRICTION;
+    b.vy *= FRICTION;
+
+    const sp = Math.hypot(b.vx, b.vy);
+    if (sp > MAX_SPEED) { b.vx = b.vx / sp * MAX_SPEED; b.vy = b.vy / sp * MAX_SPEED; }
+  }
+}
+
+// Cell classes for the span-based render. 0 = mirror, 1 = motion-highlit
+// mirror, 2 = ball. Higher values win when overlapping.
+const CELL_MIRROR = 0;
+const CELL_MOTION = 1;
+const CELL_BALL   = 2;
+
+function compositeBall(buf, kind, b) {
+  const rX = BALL_RADIUS * CELL_ASPECT;
+  const rY = BALL_RADIUS;
+  const x0 = Math.max(0, Math.floor(b.x - rX - 1));
+  const x1 = Math.min(ASCII_W - 1, Math.ceil(b.x + rX + 1));
+  const y0 = Math.max(0, Math.floor(b.y - rY - 1));
+  const y1 = Math.min(ASCII_H - 1, Math.ceil(b.y + rY + 1));
+  const cs = Math.cos(b.spin), sn = Math.sin(b.spin);
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const nx = (x - b.x) / rX;
+      const ny = (y - b.y) / rY;
+      const r2 = nx * nx + ny * ny;
+      if (r2 > 1) continue;
+      const z = Math.sqrt(1 - r2);
+      const xR = nx * cs - z * sn;
+      const zR = nx * sn + z * cs;
+      const theta = Math.atan2(ny, xR);
+      const phi   = Math.atan2(Math.hypot(xR, ny), zR);
+      const seamA = Math.sin(theta * 5 + Math.cos(phi * 3 + 0.4));
+      const seamB = Math.cos(phi * 5 - Math.sin(theta * 3));
+      const onSeam = Math.abs(seamA) < 0.3 || Math.abs(seamB) < 0.24;
+      const L = Math.max(0, nx * (-0.35) + ny * (-0.6) + z * 0.72);
+      // Slight extra punch at the center: lift floor so the ball never
+      // looks like a hole in the mirror, even on the darkest edge cells.
+      const bright = Math.max(0.18, Math.min(0.999, L * (onSeam ? 0.28 : 1)));
+      const idx = Math.floor(bright * SHADES.length);
+      const off = y * ASCII_W + x;
+      if (idx > buf[off]) buf[off] = idx;
+      kind[off] = CELL_BALL;
+    }
+  }
+}
+
+const HTML_ESCAPE = { "<": "&lt;", ">": "&gt;", "&": "&amp;" };
+function escChar(ch) { return HTML_ESCAPE[ch] || ch; }
+
+function renderInteractiveFrame(brightness, motion, balls) {
+  const buf  = new Uint8Array(ASCII_W * ASCII_H);
+  const kind = new Uint8Array(ASCII_W * ASCII_H);
+  for (let i = 0; i < brightness.length; i++) {
+    // Stronger gamma + motion glow: where the user is moving, the cell
+    // gets a brightness boost so it punches through. Mirror sits in the
+    // lower-mid range so balls stay clearly on top.
+    const m = motion ? motion[i] : 0;
+    const baseB = Math.pow(brightness[i], MIRROR_GAMMA) * MIRROR_GAIN;
+    const boost = m * MOTION_BRIGHT_BOOST;
+    const b = Math.min(0.999, baseB + boost);
+    buf[i] = Math.min(SHADES.length - 1, Math.floor(b * SHADES.length));
+    if (m > MOTION_GLOW_THRESHOLD) kind[i] = CELL_MOTION;
+  }
+  for (const ball of balls) compositeBall(buf, kind, ball);
+
+  // Build HTML rows. We only open a span when the cell class differs from
+  // the previous run, so the output stays small even with motion + balls.
+  const parts = [];
+  for (let y = 0; y < ASCII_H; y++) {
+    if (y > 0) parts.push("\n");
+    const base = y * ASCII_W;
+    let runKind = -1;
+    let run = "";
+    for (let x = 0; x < ASCII_W; x++) {
+      const off = base + x;
+      const ch = SHADES[buf[off]];
+      const k = ch === " " ? CELL_MIRROR : kind[off];
+      if (k !== runKind) {
+        if (run) parts.push(run);
+        run = "";
+        if (runKind === CELL_BALL || runKind === CELL_MOTION) parts.push("</span>");
+        if (k === CELL_BALL)   parts.push('<span class="b">');
+        else if (k === CELL_MOTION) parts.push('<span class="m">');
+        runKind = k;
+      }
+      run += escChar(ch);
+    }
+    if (run) parts.push(run);
+    if (runKind === CELL_BALL || runKind === CELL_MOTION) parts.push("</span>");
+  }
+  return parts.join("");
+}
+
+function startChoreo() {
+  const stageEl = $("ascii-stage");
+  const hasCamera = !!(state.stream && video.videoWidth > 0);
+  state.asciiRunning = true;
+
+  if (hasCamera) {
+    state.balls = makeBalls();
+    state.prevBrightness = null;
+    let lastSample = 0;
+    const tick = (now) => {
+      if (!state.asciiRunning) return;
+      // ~30 fps cap — sampling + rendering ~5k cells is the hot path.
+      if (now - lastSample > 33) {
+        const brightness = sampleMirrorBrightness(video);
+        if (brightness) {
+          let motion = null;
+          if (state.prevBrightness) {
+            motion = new Float32Array(brightness.length);
+            for (let i = 0; i < brightness.length; i++) {
+              const d = brightness[i] - state.prevBrightness[i];
+              motion[i] = d < 0 ? -d : d;
+            }
+          }
+          updateBalls(state.balls, motion);
+          stageEl.innerHTML = renderInteractiveFrame(brightness, motion, state.balls);
+          state.prevBrightness = brightness;
+        }
+        lastSample = now;
+      }
+      state.asciiRaf = requestAnimationFrame(tick);
+    };
+    state.asciiRaf = requestAnimationFrame(tick);
+  } else {
+    let t = 0;
+    const ballTick = () => {
+      if (!state.asciiRunning) return;
+      stageEl.textContent = renderBall(t);
+      t += 0.05;
+      state.asciiRaf = requestAnimationFrame(ballTick);
+    };
+    ballTick();
+  }
+
+  const primaryWord = state.country ? colorWord(state.country.primary).toUpperCase() : "TEAM";
+  const baseMilestones = [
+    "Assembling squad roster…",
+    `Tailoring ${primaryWord} jerseys…`,
+    "Positioning back row…",
+    "Positioning front row…",
+    "Lighting the stadium…",
+    "Focusing the lens…",
+    "Developing the photograph…",
+    "Holding final pose…",
+  ];
+  const milestones = hasCamera
+    ? ["Wave at the camera — kick the ball!", ...baseMilestones]
+    : baseMilestones;
+  const milestoneEl = $("milestone");
+  let mi = 0;
+  milestoneEl.textContent = milestones[0];
+  state.choreoTimers.push(setInterval(() => {
+    mi = (mi + 1) % milestones.length;
+    milestoneEl.style.opacity = "0";
+    setTimeout(() => {
+      milestoneEl.textContent = milestones[mi];
+      milestoneEl.style.opacity = "1";
+    }, 350);
+  }, 5500));
+
+  state.choreoStart = Date.now();
+  const timerEl = $("elapsed-timer");
+  timerEl.textContent = "00:00";
+  state.choreoTimers.push(setInterval(() => {
+    const sec = Math.floor((Date.now() - state.choreoStart) / 1000);
+    const mm = String(Math.floor(sec / 60)).padStart(2, "0");
+    const ss = String(sec % 60).padStart(2, "0");
+    timerEl.textContent = `${mm}:${ss}`;
+  }, 500));
+
+  // Loading panel: Braille spinner + a "rolling" bar (a dense head with a
+  // fading shaded tail that scrolls left and wraps). Pure CSS would do an
+  // indeterminate stripe, but the ASCII pattern matches the terminal vibe.
+  const spinChars = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"];
+  const spinnerEl = $("lp-spinner");
+  let spinI = 0;
+  state.choreoTimers.push(setInterval(() => {
+    spinI = (spinI + 1) % spinChars.length;
+    spinnerEl.textContent = spinChars[spinI];
+  }, 90));
+
+  const BAR_WIDTH = 18;
+  const BAR_PATTERN = "████▓▓▒▒░░          "; // head + fade + gap, length 20
+  const barEl = $("lp-bar");
+  let barOffset = 0;
+  state.choreoTimers.push(setInterval(() => {
+    let row = "";
+    for (let i = 0; i < BAR_WIDTH; i++) {
+      row += BAR_PATTERN[(i + barOffset) % BAR_PATTERN.length];
+    }
+    barEl.textContent = "[" + row + "]";
+    barOffset = (barOffset + 1) % BAR_PATTERN.length;
+  }, 110));
+}
+function stopChoreo() {
+  state.asciiRunning = false;
+  if (state.asciiRaf) cancelAnimationFrame(state.asciiRaf);
+  state.asciiRaf = null;
+  state.choreoTimers.forEach(t => clearInterval(t));
+  state.choreoTimers = [];
+  state.balls = null;
+  state.prevBrightness = null;
+}
+
+// ════════ Result auto-return countdown ════════
+let _cdTimer = null;
+function startResultCountdown() {
+  clearResultCountdown();
+  let secs = 60;
+  const numEl = $("cd-num");
+  const wrap  = $("result-countdown");
+  if (!wrap) return;
+  numEl.textContent = secs;
+  wrap.style.display = "block";
+  _cdTimer = setInterval(() => {
+    secs--;
+    numEl.textContent = secs;
+    if (secs <= 0) { clearResultCountdown(); startOver(); }
+  }, 1000);
+}
+function clearResultCountdown() {
+  if (_cdTimer) { clearInterval(_cdTimer); _cdTimer = null; }
+  const wrap = $("result-countdown");
+  if (wrap) wrap.style.display = "none";
+}
+
+// ════════ Result wiring ════════
+$("restart-btn").addEventListener("click", startOver);
+$("redo-photo-btn").addEventListener("click", startOver);
+$("retry-btn").addEventListener("click", () => { clearResultCountdown(); runGeneration(); });
+$("download-btn").addEventListener("click", () => {
+  clearResultCountdown();
+  if (!state.generatedUrl && !state.compositeBlobUrl) return;
+  const name = `team-${state.country?.code || "wc26"}`;
+  const url = state.compositeBlobUrl
+    || `/api/download?url=${encodeURIComponent(state.generatedUrl)}&name=${encodeURIComponent(name)}`;
+  const a = document.createElement("a");
+  a.href = url; a.download = `${name}.png`;
+  document.body.appendChild(a);
+  a.click(); a.remove();
+});
+
+// ════════ Boot ════════
+loadCountries();
+ensureDetectorReady();
+setState("capture");
+</script>
+</body>
+</html>

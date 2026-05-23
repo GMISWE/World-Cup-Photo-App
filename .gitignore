@@ -1,0 +1,18 @@
+# Secrets
+.env
+
+# Virtualenv
+.venv/
+__pycache__/
+*.pyc
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local Claude Code settings
+.claude/
+
+# Build / runtime
+*.log

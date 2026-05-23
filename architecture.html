@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GMI × World Cup 2026 · Pipeline Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Geist+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lime:     #ddea4d;
+    --lime-s:   rgba(221,234,77,.12);
+    --lime-g:   rgba(221,234,77,.35);
+    --s1: #0e0e0e; --s2: #101010; --s3: #171717; --s4: #1c1c1c;
+    --bd: #404040; --bs: rgba(222,222,222,.12);
+    --tx: #fafafa; --mu: #a3a3a3;
+    --fd: "Space Grotesk","Inter",system-ui,sans-serif;
+    --fb: "Inter",system-ui,sans-serif;
+    --fm: "Geist Mono",ui-monospace,"SF Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#000;color:var(--tx);font-family:var(--fb);
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(1100px 500px at 85% 0%,rgba(221,234,77,.055),transparent),
+      radial-gradient(700px 400px at 5% 100%,rgba(221,234,77,.04),transparent);
+  }
+  .page{max-width:1080px;margin:0 auto;padding:0 32px 72px}
+
+  /* topbar */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 0;border-bottom:1px solid var(--bs);margin-bottom:40px;
+  }
+  .wordmark{
+    font-family:var(--fm);font-size:11px;letter-spacing:.22em;
+    color:var(--mu);text-transform:uppercase;display:flex;align-items:center;gap:9px;
+  }
+  .dot{width:7px;height:7px;background:var(--lime);flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .back{
+    font-family:var(--fm);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--mu);text-decoration:none;padding:5px 12px;border:1px solid var(--bs);
+    transition:color .15s,border-color .15s;
+  }
+  .back:hover{color:var(--lime);border-color:var(--lime)}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:end;margin-bottom:28px}
+  .eyebrow{font-family:var(--fm);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--lime);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:24px;height:1px;background:var(--lime)}
+  h1{font-family:var(--fd);font-size:clamp(32px,4vw,52px);font-weight:700;line-height:1.05;letter-spacing:-.025em}
+  h1 em{font-style:normal;color:var(--lime)}
+  .hero-right{display:flex;flex-direction:column;gap:0;border:1px solid var(--bs);background:var(--s1)}
+  .hstat{padding:12px 20px;border-bottom:1px solid var(--bs);display:flex;justify-content:space-between;align-items:baseline}
+  .hstat:last-child{border-bottom:0}
+  .hstat-v{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--lime);letter-spacing:-.03em}
+  .hstat-l{font-family:var(--fm);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mu)}
+
+  /* section label */
+  .sec{font-family:var(--fm);font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--mu);margin-bottom:12px;display:flex;align-items:center;gap:12px}
+  .sec::after{content:"";flex:1;height:1px;background:var(--bs)}
+
+  /* diagram */
+  .diag-wrap{border:1px solid var(--bs);background:var(--s1);margin-bottom:28px;overflow:hidden;position:relative}
+  .diag-wrap::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(90deg,rgba(221,234,77,.033) 0 1px,transparent 1px 80px),
+               repeating-linear-gradient(0deg,rgba(221,234,77,.022) 0 1px,transparent 1px 80px);
+    background-size:80px 80px;
+  }
+  .diag-svg{width:100%;height:auto;display:block;position:relative;z-index:1}
+
+  /* bottom grid: endpoints + decisions */
+  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bs);border:1px solid var(--bs);margin-bottom:28px}
+  .panel{background:var(--s1);padding:24px 22px}
+
+  /* endpoint table */
+  .ep-table{width:100%;border-collapse:collapse}
+  .ep-table th{
+    font-family:var(--fm);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--mu);text-align:left;padding:0 10px 8px 0;border-bottom:1px solid var(--bs);
+  }
+  .ep-table td{
+    font-family:var(--fm);font-size:10px;color:var(--tx);
+    padding:9px 10px 9px 0;border-bottom:1px solid rgba(222,222,222,.06);
+    vertical-align:top;
+  }
+  .ep-table tr:last-child td{border-bottom:0}
+  .ep-table td.path{color:var(--lime);font-weight:700;white-space:nowrap}
+  .ep-table td.model{color:var(--tx)}
+  .ep-table td.lat{color:var(--lime);text-align:right;white-space:nowrap}
+  .ep-table td.note{color:var(--mu);font-size:9px;line-height:1.5}
+
+  /* decisions */
+  .decisions{display:flex;flex-direction:column;gap:0}
+  .dec{padding:14px 0;border-bottom:1px solid rgba(222,222,222,.06)}
+  .dec:last-child{border-bottom:0}
+  .dec-title{font-family:var(--fd);font-size:12px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+  .dec-title::before{content:"";width:6px;height:6px;background:var(--lime);flex-shrink:0}
+  .dec-body{font-family:var(--fm);font-size:9.5px;line-height:1.65;color:var(--mu)}
+  .dec-body code{color:var(--tx);background:var(--s3);padding:1px 4px}
+
+  /* payload section */
+  .payload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bs);border:1px solid var(--bs)}
+  .payload-card{background:var(--s1);padding:18px 16px}
+  .payload-label{font-family:var(--fm);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mu);margin-bottom:10px}
+  .payload-name{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--tx);margin-bottom:12px}
+  pre.payload{
+    font-family:var(--fm);font-size:9px;line-height:1.7;color:var(--mu);
+    background:var(--s2);border:1px solid var(--bs);padding:10px 12px;
+    white-space:pre;overflow-x:auto;margin:0;
+  }
+  pre.payload .k{color:var(--lime)}
+  pre.payload .v{color:#a8d8a8}
+  pre.payload .s{color:#f4a261}
+
+  @media(max-width:700px){
+    .hero{grid-template-columns:1fr}
+    .bottom{grid-template-columns:1fr}
+    .payload-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <div class="wordmark"><span class="dot"></span>GMI × WORLD CUP 2026</div>
+    <a href="/" class="back">← Back to App</a>
+  </header>
+
+  <!-- hero + stats -->
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Technical Architecture</div>
+      <h1>AI Pipeline —<br><em>Team Photo</em><br>Generation</h1>
+    </div>
+    <div class="hero-right">
+      <div class="hstat"><span class="hstat-v">3</span><span class="hstat-l">AI models in pipeline</span></div>
+      <div class="hstat"><span class="hstat-v">~15s</span><span class="hstat-l">Avg. generation time</span></div>
+      <div class="hstat"><span class="hstat-v">11</span><span class="hstat-l">Max faces per photo</span></div>
+      <div class="hstat"><span class="hstat-v">48</span><span class="hstat-l">World Cup 2026 nations</span></div>
+    </div>
+  </section>
+
+  <!-- architecture diagram -->
+  <div class="sec">System Diagram</div>
+  <div class="diag-wrap">
+    <svg class="diag-svg" viewBox="0 0 960 478" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#ddea4d"/>
+        </marker>
+        <marker id="arr-mu" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#404040"/>
+        </marker>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- BROWSER -->
+      <rect x="14" y="148" width="156" height="182" fill="#0e0e0e" stroke="rgba(222,222,222,0.15)" stroke-width="1"/>
+      <rect x="14" y="148" width="156" height="2" fill="#ddea4d"/>
+      <rect x="26" y="162" width="132" height="76" fill="#101010" stroke="rgba(222,222,222,0.09)" stroke-width="1"/>
+      <circle cx="38" cy="173" r="3.5" fill="rgba(221,234,77,0.55)"/>
+      <circle cx="49" cy="173" r="3.5" fill="rgba(221,234,77,0.3)"/>
+      <circle cx="60" cy="173" r="3.5" fill="rgba(221,234,77,0.15)"/>
+      <rect x="70" y="169" width="80" height="8" rx="1" fill="#1c1c1c" stroke="rgba(222,222,222,0.1)" stroke-width="1"/>
+      <rect x="34" y="190" width="116" height="7" fill="rgba(221,234,77,0.18)"/>
+      <rect x="34" y="203" width="88" height="4" fill="rgba(255,255,255,0.07)"/>
+      <rect x="34" y="212" width="104" height="4" fill="rgba(255,255,255,0.07)"/>
+      <rect x="34" y="221" width="68"  height="4" fill="rgba(255,255,255,0.07)"/>
+      <circle cx="143" cy="225" r="7" fill="none" stroke="rgba(221,234,77,0.45)" stroke-width="1.5"/>
+      <circle cx="143" cy="225" r="3" fill="rgba(221,234,77,0.4)"/>
+      <text x="26" y="264" font-family="'Space Grotesk',sans-serif" font-size="11" font-weight="700" fill="#fafafa" letter-spacing="0.05em">BROWSER</text>
+      <text x="26" y="280" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3" letter-spacing="0.05em">Camera · Upload</text>
+      <text x="26" y="296" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3" letter-spacing="0.05em">MediaPipe BlazeFace WASM</text>
+      <text x="26" y="312" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3" letter-spacing="0.05em">Canvas collage builder</text>
+
+      <!-- arrow Browser → Flask -->
+      <line x1="170" y1="239" x2="226" y2="239" stroke="#ddea4d" stroke-width="1.5" marker-end="url(#arr)" filter="url(#glow)"/>
+      <rect x="175" y="223" width="44" height="13" fill="#000"/>
+      <text x="197" y="233" font-family="'Geist Mono',monospace" font-size="8.5" fill="#a3a3a3" text-anchor="middle" letter-spacing="0.09em">HTTP</text>
+
+      <!-- FLASK -->
+      <rect x="230" y="110" width="178" height="258" fill="#0e0e0e" stroke="rgba(222,222,222,0.15)" stroke-width="1"/>
+      <rect x="230" y="110" width="178" height="2" fill="#ddea4d"/>
+      <rect x="242" y="122" width="154" height="48" fill="#101010" stroke="rgba(222,222,222,0.09)" stroke-width="1"/>
+      <text x="252" y="140" font-family="'Space Grotesk',sans-serif" font-size="11" font-weight="700" fill="#ddea4d" letter-spacing="0.05em">FLASK :5050</text>
+      <text x="252" y="156" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3" letter-spacing="0.05em">Python · server.py</text>
+      <line x1="242" y1="182" x2="396" y2="182" stroke="rgba(222,222,222,0.08)"/>
+      <text x="242" y="196" font-family="'Geist Mono',monospace" font-size="8.5" fill="#a3a3a3" letter-spacing="0.15em">ENDPOINTS</text>
+      <rect x="242" y="205" width="5" height="5" fill="rgba(221,234,77,0.7)"/>
+      <text x="253" y="212" font-family="'Geist Mono',monospace" font-size="9" fill="#fafafa">/api/vision</text>
+      <rect x="242" y="222" width="5" height="5" fill="rgba(221,234,77,0.7)"/>
+      <text x="253" y="229" font-family="'Geist Mono',monospace" font-size="9" fill="#fafafa">/api/generate</text>
+      <rect x="242" y="239" width="5" height="5" fill="rgba(221,234,77,0.7)"/>
+      <text x="253" y="246" font-family="'Geist Mono',monospace" font-size="9" fill="#fafafa">/api/identity-score</text>
+      <rect x="242" y="256" width="5" height="5" fill="rgba(221,234,77,0.2)"/>
+      <text x="253" y="263" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">/api/download</text>
+      <rect x="242" y="278" width="154" height="38" fill="#101010" stroke="rgba(222,222,222,0.08)" stroke-width="1"/>
+      <text x="252" y="293" font-family="'Geist Mono',monospace" font-size="8" fill="#a3a3a3">async queue + 2s poll · 120s budget</text>
+      <text x="252" y="307" font-family="'Geist Mono',monospace" font-size="8" fill="#a3a3a3">build_edit_payload() per model family</text>
+
+      <!-- GMI Cloud dashed box -->
+      <rect x="456" y="20" width="490" height="438" fill="rgba(221,234,77,0.012)" stroke="rgba(221,234,77,0.28)" stroke-width="1" stroke-dasharray="7,4"/>
+      <text x="472" y="42" font-family="'Geist Mono',monospace" font-size="9" fill="rgba(221,234,77,0.55)" letter-spacing="0.26em">GMI CLOUD  ·  gmi-serving.com</text>
+
+      <!-- arrows Flask → models -->
+      <path d="M408,165 C440,165 450,118 470,118" fill="none" stroke="#ddea4d" stroke-width="1.5" marker-end="url(#arr)" filter="url(#glow)"/>
+      <text x="413" y="141" font-family="'Geist Mono',monospace" font-size="8" fill="#a3a3a3" letter-spacing="0.06em">~3s</text>
+      <line x1="408" y1="239" x2="470" y2="239" stroke="#ddea4d" stroke-width="1.5" marker-end="url(#arr)" filter="url(#glow)"/>
+      <text x="414" y="230" font-family="'Geist Mono',monospace" font-size="8" fill="#a3a3a3" letter-spacing="0.06em">~15s</text>
+      <path d="M408,310 C440,310 450,360 470,360" fill="none" stroke="#ddea4d" stroke-width="1.5" marker-end="url(#arr)" filter="url(#glow)"/>
+      <text x="413" y="353" font-family="'Geist Mono',monospace" font-size="8" fill="#a3a3a3" letter-spacing="0.06em">~5s</text>
+
+      <!-- Model 1: Gemini Flash Lite -->
+      <rect x="472" y="72" width="456" height="100" fill="#0e0e0e" stroke="rgba(222,222,222,0.13)" stroke-width="1"/>
+      <rect x="472" y="72" width="3" height="100" fill="#ddea4d"/>
+      <text x="488" y="92"  font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3" letter-spacing="0.18em">STEP 01  ·  VISION  ·  /v1/chat/completions</text>
+      <text x="488" y="110" font-family="'Space Grotesk',sans-serif" font-size="14" font-weight="700" fill="#fafafa">Gemini 3.1 Flash Lite</text>
+      <text x="488" y="126" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">Extracts face attributes as JSON: age band, skin tone, hair, facial hair, glasses</text>
+      <text x="488" y="141" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">response_format: json_object · max_tokens: 200 · temp: 0.2</text>
+      <text x="488" y="157" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">One call per face crop · parallel requests · 512×512 JPEG input</text>
+      <rect x="862" y="86" width="54" height="22" fill="rgba(221,234,77,0.1)" stroke="rgba(221,234,77,0.25)" stroke-width="1"/>
+      <text x="889" y="101" font-family="'Geist Mono',monospace" font-size="10" font-weight="700" fill="#ddea4d" text-anchor="middle">~3s</text>
+
+      <!-- Model 2: Gemini Flash Image -->
+      <rect x="472" y="192" width="456" height="100" fill="#0e0e0e" stroke="rgba(222,222,222,0.13)" stroke-width="1"/>
+      <rect x="472" y="192" width="3" height="100" fill="#ddea4d"/>
+      <text x="488" y="212" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3" letter-spacing="0.18em">STEP 02  ·  GENERATE  ·  /apikey/requests (async queue)</text>
+      <text x="488" y="230" font-family="'Space Grotesk',sans-serif" font-size="14" font-weight="700" fill="#fafafa">Gemini 3.1 Flash Image (preview)</text>
+      <text x="488" y="246" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">Identity-preserving edit: reference collage → FIFA team photo · 1024×1024</text>
+      <text x="488" y="261" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">Submit → receive request_id → poll /requests/{id} every 2s → inline base64 → data URI</text>
+      <text x="488" y="276" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">768×768 JPEG collage input · n: 1 · gpt-image-2-edit available via EDIT_MODEL</text>
+      <rect x="862" y="206" width="54" height="22" fill="rgba(221,234,77,0.1)" stroke="rgba(221,234,77,0.25)" stroke-width="1"/>
+      <text x="889" y="221" font-family="'Geist Mono',monospace" font-size="10" font-weight="700" fill="#ddea4d" text-anchor="middle">~15s</text>
+
+      <!-- Model 3: GPT-4o -->
+      <rect x="472" y="312" width="456" height="100" fill="#0e0e0e" stroke="rgba(222,222,222,0.13)" stroke-width="1"/>
+      <rect x="472" y="312" width="3" height="100" fill="#ddea4d"/>
+      <text x="488" y="332" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3" letter-spacing="0.18em">STEP 03  ·  SCORE  ·  /v1/chat/completions</text>
+      <text x="488" y="350" font-family="'Space Grotesk',sans-serif" font-size="14" font-weight="700" fill="#fafafa">GPT-4o Vision</text>
+      <text x="488" y="366" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">Reference vs generated: face-to-face comparison · returns 0–100 fidelity score</text>
+      <text x="488" y="381" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">verdict: same | similar | different · one-sentence notes · temp: 0.1</text>
+      <text x="488" y="396" font-family="'Geist Mono',monospace" font-size="9" fill="#a3a3a3">Used in bench tool · overridable via IDENTITY_MODEL env var</text>
+      <rect x="862" y="326" width="54" height="22" fill="rgba(221,234,77,0.1)" stroke="rgba(221,234,77,0.25)" stroke-width="1"/>
+      <text x="889" y="341" font-family="'Geist Mono',monospace" font-size="10" font-weight="700" fill="#ddea4d" text-anchor="middle">~5s</text>
+    </svg>
+  </div>
+
+  <!-- endpoint reference + design decisions -->
+  <div class="sec">Endpoint Reference &amp; Design Decisions</div>
+  <div class="bottom">
+
+    <div class="panel">
+      <table class="ep-table">
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Model</th>
+            <th>Route</th>
+            <th style="text-align:right">Latency</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="path">POST /api/vision</td>
+            <td class="model">gemini-3.1-flash-lite</td>
+            <td style="color:var(--mu);font-size:9px">GMI Chat API<br>json_object mode</td>
+            <td class="lat">~3s</td>
+          </tr>
+          <tr>
+            <td class="path">POST /api/generate</td>
+            <td class="model">gemini-3.1-flash-image-preview</td>
+            <td style="color:var(--mu);font-size:9px">GMI Queue API<br>submit + poll</td>
+            <td class="lat">~15s</td>
+          </tr>
+          <tr>
+            <td class="path">POST /api/identity-score</td>
+            <td class="model">openai/gpt-4o</td>
+            <td style="color:var(--mu);font-size:9px">GMI Chat API<br>json_object mode</td>
+            <td class="lat">~5s</td>
+          </tr>
+          <tr>
+            <td class="path" style="font-size:9px;color:var(--mu)">GET /api/download</td>
+            <td colspan="3" style="color:var(--mu);font-size:9px">Proxies GCS URLs — avoids CORS on storage.googleapis.com. Validates origin domain before fetching.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="decisions">
+        <div class="dec">
+          <div class="dec-title">Gemini Flash Lite for vision, not GPT-4o</div>
+          <div class="dec-body">40% faster on the same structured JSON attribute prompt (~3s vs ~5s). <code>response_format: json_object</code> is reliable on both; Gemini wins on throughput per face crop when running N calls in parallel.</div>
+        </div>
+        <div class="dec">
+          <div class="dec-title">Gemini Flash Image (preview) for generation, not GPT-Image-2-Edit</div>
+          <div class="dec-body">Bench across both: Gemini averaged <code>14.6s</code> per generation with a consistent <code>85/100</code> identity score; GPT-Image-2-Edit averaged <code>124s</code> with variable <code>50–92</code> identity and frequent 60s+ outliers. Gemini wins on both throughput and identity stability. <code>EDIT_MODEL</code> env var swaps back to <code>gpt-image-2-edit</code> when max-fidelity matters more than speed.</div>
+        </div>
+        <div class="dec">
+          <div class="dec-title">Client-side face detection (MediaPipe WASM)</div>
+          <div class="dec-body">BlazeFace runs entirely in the browser — zero server round-trip for detection. Each crop is normalized to 512×512 and sent individually to <code>/api/vision</code>, keeping server payloads small and calls parallelizable.</div>
+        </div>
+        <div class="dec">
+          <div class="dec-title">768×768 JPEG collage, not raw photo</div>
+          <div class="dec-body">All face crops are assembled into a labeled grid before sending to the image model. This normalizes face scale regardless of source position, and JPEG at 0.88 quality is ~50% smaller than PNG with no visible degradation at 1024px output resolution.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- payload reference -->
+  <div class="sec">Key Payload Shapes</div>
+  <div class="payload-grid">
+
+    <div class="payload-card">
+      <div class="payload-label">POST /api/vision</div>
+      <div class="payload-name">Vision Request</div>
+      <pre class="payload">{
+  <span class="k">"model"</span>: <span class="s">"gemini-3.1-flash-lite"</span>,
+  <span class="k">"messages"</span>: [{
+    <span class="k">"role"</span>: <span class="s">"user"</span>,
+    <span class="k">"content"</span>: [
+      { <span class="k">"type"</span>: <span class="s">"text"</span>,
+        <span class="k">"text"</span>: <span class="s">"&lt;VISION_PROMPT&gt;"</span> },
+      { <span class="k">"type"</span>: <span class="s">"image_url"</span>,
+        <span class="k">"image_url"</span>: {
+          <span class="k">"url"</span>: <span class="s">"data:image/jpeg;base64,…"</span>
+        }}
+    ]
+  }],
+  <span class="k">"response_format"</span>: {
+    <span class="k">"type"</span>: <span class="s">"json_object"</span> },
+  <span class="k">"max_tokens"</span>: <span class="v">200</span>,
+  <span class="k">"temperature"</span>: <span class="v">0.2</span>
+}</pre>
+    </div>
+
+    <div class="payload-card">
+      <div class="payload-label">POST /api/generate → GMI Queue</div>
+      <div class="payload-name">Generate Request</div>
+      <pre class="payload">{
+  <span class="k">"model"</span>: <span class="s">"gemini-3.1-flash-image-preview"</span>,
+  <span class="k">"payload"</span>: {
+    <span class="k">"prompt"</span>: <span class="s">"OFFICIAL FIFA PRE-MATCH…"</span>,
+    <span class="k">"image"</span>: <span class="s">"data:image/jpeg;base64,…"</span>,
+    <span class="k">"size"</span>: <span class="s">"1024x1024"</span>,
+    <span class="k">"n"</span>: <span class="v">1</span>
+  }
+}
+
+<span class="k">// Poll response (success — Gemini)</span>
+{
+  <span class="k">"status"</span>: <span class="s">"completed"</span>,
+  <span class="k">"outcome"</span>: {
+    <span class="k">"candidates"</span>: [{
+      <span class="k">"content"</span>: { <span class="k">"parts"</span>: [{
+        <span class="k">"inlineData"</span>: {
+          <span class="k">"mimeType"</span>: <span class="s">"image/png"</span>,
+          <span class="k">"data"</span>: <span class="s">"&lt;base64&gt;"</span>
+        }
+      }] }
+    }]
+  }
+}</pre>
+    </div>
+
+    <div class="payload-card">
+      <div class="payload-label">Vision model response</div>
+      <div class="payload-name">Attributes JSON</div>
+      <pre class="payload">{
+  <span class="k">"apparent_age_band"</span>: <span class="s">"30s"</span>,
+  <span class="k">"apparent_gender_presentation"</span>:
+    <span class="s">"masculine"</span>,
+  <span class="k">"hair"</span>: <span class="s">"short black"</span>,
+  <span class="k">"facial_hair"</span>: <span class="s">"stubble"</span>,
+  <span class="k">"glasses"</span>: <span class="v">false</span>,
+  <span class="k">"skin_tone"</span>: <span class="s">"medium"</span>,
+  <span class="k">"distinguishing"</span>: <span class="s">"prominent brow"</span>
+}
+
+<span class="k">// Used to build the per-player
+// guide section of the image
+// generation prompt</span></pre>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
