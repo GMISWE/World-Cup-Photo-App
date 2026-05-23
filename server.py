@@ -550,7 +550,9 @@ def main():
             "will fail. Export GMI_API_KEY before running for end-to-end use.",
             file=sys.stderr,
         )
-    app.run(host="127.0.0.1", port=5050, debug=True, use_reloader=False)
+    port = int(os.environ.get("PORT", "5050"))
+    host = os.environ.get("HOST", "127.0.0.1")
+    app.run(host=host, port=port, debug=True, use_reloader=False)
 
 
 if __name__ == "__main__":
