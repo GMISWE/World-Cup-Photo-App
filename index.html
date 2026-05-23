@@ -1051,6 +1051,69 @@ const state = {
 const $ = id => document.getElementById(id);
 const workspace = $("workspace");
 
+// ════════ Audio FX (Web Audio synth — no asset files) ════════
+const audio = (() => {
+  let ctx = null;
+  const ensure = () => {
+    if (!ctx) {
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch { return null; }
+    }
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+    return ctx;
+  };
+  const env = (gainNode, t0, attack, hold, release, peak) => {
+    const g = gainNode.gain;
+    g.cancelScheduledValues(t0);
+    g.setValueAtTime(0.0001, t0);
+    g.exponentialRampToValueAtTime(peak, t0 + attack);
+    g.setValueAtTime(peak, t0 + attack + hold);
+    g.exponentialRampToValueAtTime(0.0001, t0 + attack + hold + release);
+  };
+  const tone = (freq, when, dur, peak = 0.18, type = "sine") => {
+    const c = ensure(); if (!c) return;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, when);
+    o.connect(g).connect(c.destination);
+    env(g, when, 0.005, dur * 0.5, dur * 0.5, peak);
+    o.start(when);
+    o.stop(when + dur + 0.1);
+  };
+  return {
+    unlock() { ensure(); },
+    beep(n) {
+      const c = ensure(); if (!c) return;
+      const freq = n <= 1 ? 880 : n === 2 ? 660 : 523;
+      tone(freq, c.currentTime, 0.12, 0.20, "triangle");
+    },
+    shutter() {
+      const c = ensure(); if (!c) return;
+      const t0 = c.currentTime;
+      const buf = c.createBuffer(1, Math.floor(c.sampleRate * 0.12), c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      const noise = c.createBufferSource(); noise.buffer = buf;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(0.35, t0);
+      ng.gain.exponentialRampToValueAtTime(0.001, t0 + 0.1);
+      const filt = c.createBiquadFilter();
+      filt.type = "bandpass"; filt.frequency.value = 2400; filt.Q.value = 1.5;
+      noise.connect(filt).connect(ng).connect(c.destination);
+      noise.start(t0); noise.stop(t0 + 0.12);
+      tone(120, t0, 0.08, 0.22, "sine");
+    },
+    chime() {
+      const c = ensure(); if (!c) return;
+      const t0 = c.currentTime;
+      tone(523.25, t0,        0.18, 0.16, "sine"); // C5
+      tone(659.25, t0 + 0.10, 0.18, 0.16, "sine"); // E5
+      tone(783.99, t0 + 0.20, 0.30, 0.18, "sine"); // G5
+    },
+  };
+})();
+
 // ════════ State machine ════════
 function setState(name) {
   workspace.setAttribute("data-state", name);
@@ -1161,6 +1224,7 @@ countdownCancel.addEventListener("click", () => state.captureAbort?.abort());
 
 async function runCaptureCountdown() {
   if (!state.stream || !video.videoWidth) return;
+  audio.unlock();
   state.captureAbort = new AbortController();
   const signal = state.captureAbort.signal;
   camOverlay.style.display = "none";
@@ -1168,6 +1232,7 @@ async function runCaptureCountdown() {
   try {
     for (let n = 3; n >= 1; n--) {
       countdownNum.textContent = String(n);
+      audio.beep(n);
       // Restart the CSS animation
       countdownNum.style.animation = "none";
       void countdownNum.offsetWidth;
@@ -1175,6 +1240,7 @@ async function runCaptureCountdown() {
       await wait(1000, signal);
     }
     countdownOverlay.style.display = "none";
+    audio.shutter();
     flashOverlay.classList.remove("firing");
     void flashOverlay.offsetWidth;
     flashOverlay.classList.add("firing");
@@ -1500,7 +1566,7 @@ function renderGrid() {
     card.style.animationDelay = (i * 18) + "ms";
     card.dataset.code = c.code;
     card.innerHTML = `
-      <div class="flag"><img src="${c.flagPath}" alt="${c.name}"></div>
+      <div class="flag"><img src="${c.flagPath}" alt="" loading="eager" decoding="async" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.src+'?r='+Date.now();}"></div>
       <div class="name">${c.name}</div>`;
     card.addEventListener("click", () => pickCountry(c, card));
     grid.appendChild(card);
@@ -1527,7 +1593,7 @@ function renderKitIndicator() {
   const c = state.country;
   if (!c) { el.innerHTML = `<span class="empty">No country selected</span>`; return; }
   el.innerHTML = `
-    <div class="kit-flag"><img src="${c.flagPath}" alt=""></div>
+    <div class="kit-flag"><img src="${c.flagPath}" alt="" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.src+'?r='+Date.now();}"></div>
     <div class="kit-name">${c.name}</div>
     <div class="kit-swatches">
       <div class="sw" style="background:${c.primary}"></div>
@@ -1733,8 +1799,14 @@ async function runGeneration() {
         skip_verify: true,
       }),
     });
-    const j = await r.json();
-    if (!r.ok || !j.image_url) throw new Error(j.error || `HTTP ${r.status}`);
+    const raw = await r.text();
+    let j;
+    try { j = raw ? JSON.parse(raw) : {}; }
+    catch { throw new Error(`Server returned ${r.status} with non-JSON body (${raw.slice(0, 120) || "empty"}). The generation likely timed out — try again.`); }
+    if (!r.ok || !j.image_url) {
+      if (r.status === 502 || r.status === 503 || r.status === 504) throw new Error(j.error || `Upstream timeout (HTTP ${r.status}). Try again — the model server is slow right now.`);
+      throw new Error(j.error || `HTTP ${r.status}`);
+    }
     state.generatedUrl = j.image_url;
     state.resultUrl = j.result_url || null;
     state.genElapsed = typeof j.elapsed === "number" ? j.elapsed : null;
@@ -1771,6 +1843,7 @@ async function revealResult() {
     fallback.src = state.generatedUrl;
     stage.appendChild(fallback);
   }
+  audio.chime();
   $("retry-btn").style.display = "none";
   if (state.mismatch) {
     $("result-notice").textContent = `Heads up: rendered ${state.verifiedCount ?? "?"} ${state.verifiedCount === 1 ? "person" : "people"}; expected ${state.faces.filter(f => f.include).length}.`;
