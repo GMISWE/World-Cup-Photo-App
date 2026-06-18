@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GMI × World Cup 2026 · Team Photo</title>
+<title>World Cup 2026 · Team Photo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Geist+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -113,8 +113,13 @@
     position: relative;
     display: grid;
     width: 100vw;
-    height: 100vh;
-    padding: 24px;
+    height: 100vh;       /* fallback */
+    height: 100dvh;      /* iOS: track the dynamic viewport so the address bar can't clip the bottom controls */
+    padding:
+      calc(24px + env(safe-area-inset-top))
+      calc(24px + env(safe-area-inset-right))
+      calc(24px + env(safe-area-inset-bottom))
+      calc(24px + env(safe-area-inset-left));
     gap: 24px;
     background:
       radial-gradient(1200px 600px at 80% -10%, rgba(221,234,77,0.05), transparent),
@@ -149,7 +154,7 @@
   /* ─── Wordmark (always visible top-left) ─── */
   .wordmark {
     position: absolute;
-    top: 18px; left: 24px;
+    top: calc(18px + env(safe-area-inset-top)); left: calc(24px + env(safe-area-inset-left));
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.2em;
@@ -163,7 +168,7 @@
   /* ─── Upload link (floating, capture state only) ─── */
   .upload-link {
     position: absolute;
-    bottom: 20px; right: 24px;
+    bottom: calc(20px + env(safe-area-inset-bottom)); right: calc(24px + env(safe-area-inset-right));
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
@@ -490,7 +495,9 @@
     width: 8px; height: 8px;
     background: var(--color-lime);
     display: inline-block;
+    flex-shrink: 0;
   }
+  .picker-header > span:first-of-type { flex: 1; }
   .country-grid {
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -501,7 +508,16 @@
     min-height: 0;
   }
   @media (max-aspect-ratio: 1/1) {
-    .country-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    /* Portrait/mobile: fewer columns for tappable cards, and let the grid
+       scroll so every country is reachable (it was clipped before). */
+    .country-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-auto-rows: minmax(62px, auto);
+      align-content: start;
+      overflow: hidden auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
   }
   .card {
     position: relative;
@@ -637,6 +653,19 @@
     color: var(--color-lime);
     letter-spacing: 0.06em;
   }
+  .choreo-cam {
+    position: absolute;
+    top: 64px; right: 24px;
+    width: 280px; height: 210px;
+    object-fit: cover;
+    z-index: 3;
+    border: 1px solid var(--color-lime);
+    box-shadow: 0 0 0 4px rgba(0,0,0,0.45), 0 0 24px rgba(221,234,77,0.18);
+    background: #000;
+  }
+  @media (max-width: 900px) {
+    .choreo-cam { width: 168px; height: 126px; top: 58px; }
+  }
   .choreo-center {
     position: relative;
     z-index: 2;
@@ -755,6 +784,26 @@
     color: var(--color-lime);
     text-shadow: 0 0 8px var(--color-lime-glow);
   }
+  /* Narrow screens (small windows / phones, any orientation): the status panel's
+     340px min-width would overlap the bottom-left reference frame (and overflow
+     a phone-width column). Stack them instead — reference frame up top, status as
+     a full-width bar along the bottom. */
+  @media (max-width: 720px) {
+    .reference-frame {
+      top: calc(54px + env(safe-area-inset-top)); bottom: auto;
+      left: 18px; width: 96px;
+    }
+    .reference-frame .rf-img-wrap { aspect-ratio: 16 / 9; }
+    .loading-panel {
+      left: 18px; right: 18px;
+      min-width: 0; width: auto;
+      padding: 12px 16px;
+    }
+    .loading-panel .lp-label { font-size: 10px; }
+    .loading-panel .lp-row { font-size: 15px; gap: 10px; }
+    .loading-panel .lp-spinner { font-size: 20px; }
+    .loading-panel .lp-bar { font-size: 16px; }
+  }
 
   /* ─── Result region ─── */
   .result-region {
@@ -839,10 +888,23 @@
     line-height: 1.3;
   }
   @media (max-width: 880px) {
-    .result-bottom { grid-template-columns: 1fr; row-gap: 12px; }
-    .result-stats { justify-self: center; white-space: normal; text-align: center; }
-    .result-actions { justify-self: center; }
-    .qr-block { justify-self: center; }
+    .result-bottom {
+      grid-template-columns: 1fr;
+      row-gap: 14px;
+      padding: 14px 16px calc(20px + env(safe-area-inset-bottom));
+    }
+    /* The children carry explicit grid-column 1/2/3 for the desktop 3-up row;
+       reset them to a single column so they actually stack (otherwise the
+       actions stay in a too-wide track and get clipped by overflow:hidden). */
+    .result-stats, .result-actions, .qr-block { grid-column: 1; justify-self: center; }
+    .result-stats { white-space: normal; text-align: center; }
+    .result-actions { flex-wrap: wrap; justify-content: center; width: 100%; max-width: 380px; }
+  }
+  @media (max-width: 560px) {
+    /* Phones: stack the buttons full-width so nothing is cut off. */
+    .result-actions { flex-direction: column; max-width: 320px; }
+    .result-actions .btn-primary,
+    .result-actions .btn-outline { width: 100%; justify-content: center; }
   }
   .result-error {
     text-align: center;
@@ -881,7 +943,7 @@
   /* ─── Architecture nav link ─── */
   .arch-link {
     position: absolute;
-    top: 18px; right: 24px;
+    top: calc(18px + env(safe-area-inset-top)); right: calc(24px + env(safe-area-inset-right));
     font-family: var(--font-mono); font-size: 11px;
     letter-spacing: 0.15em; text-transform: uppercase;
     color: var(--muted); text-decoration: none; z-index: 50;
@@ -903,7 +965,7 @@
 
 <main class="workspace" id="workspace" data-state="capture">
 
-  <div class="wordmark"><span class="dot"></span>GMI × WORLD CUP 2026</div>
+  <div class="wordmark"><span class="dot"></span>WORLD CUP 2026</div>
   <a href="/architecture" class="arch-link">Architecture ↗</a>
 
   <!-- ════ Capture state ════ -->
@@ -943,7 +1005,9 @@
 
   <!-- ════ Picker region ════ -->
   <section class="region picker-region" aria-label="Pick your country">
-    <div class="picker-header">Pick your country</div>
+    <div class="picker-header">
+      <span>Pick your country</span>
+    </div>
     <div class="country-grid" id="grid"></div>
   </section>
 
@@ -962,9 +1026,10 @@
   <section class="region choreo-region" aria-label="Generating team photo">
     <div class="pitch-bg"></div>
     <div class="choreo-top">
-      <div class="choreo-brand">⚡ GMI Inference Queue</div>
+      <div class="choreo-brand">⚡ Inference Queue</div>
       <div class="elapsed-timer" id="elapsed-timer">00:00</div>
     </div>
+    <video id="choreo-cam" autoplay playsinline muted class="mirror choreo-cam" style="display:none"></video>
     <div class="choreo-center">
       <pre class="ascii-stage" id="ascii-stage" aria-hidden="true"></pre>
       <div class="milestone" id="milestone">Initializing…</div>
@@ -1013,7 +1078,7 @@
 <script type="module">
 import { FilesetResolver, FaceDetector } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
-const MAX_FACES = 11;
+const MAX_FACES = 12;
 const COLOR_WORDS = [
   ["white",      255,255,255], ["black", 10,10,10], ["red", 220,30,30], ["dark red", 140,15,15],
   ["maroon",     130,30,50],   ["pink", 240,140,170], ["orange", 250,130,30], ["gold", 250,200,40],
@@ -1299,10 +1364,9 @@ async function transitionToReady() {
   persistPhoto(img.naturalWidth, img.naturalHeight);
 
   await ensureDetectorReady();
-  const result = state.detector.detect(img);
-  let detections = (result.detections || []).map(d => ({
-    x: d.boundingBox.originX, y: d.boundingBox.originY, w: d.boundingBox.width, h: d.boundingBox.height,
-  })).sort((a, b) => a.x - b.x);
+  // Detect on the full frame AND on overlapping tiles, so faces that are spread
+  // out across a high-res group shot stay large enough for BlazeFace to see.
+  let detections = detectFacesMultiPass(img).sort((a, b) => a.x - b.x);
 
   let droppedTooMany = false;
   if (detections.length > MAX_FACES) {
@@ -1342,22 +1406,54 @@ function showNoFaces() {
   document.getElementById("retake-btn").addEventListener("click", startOver);
 }
 
+// The photo is object-fit:contain inside the frame (centered, letterboxed), so
+// the rendered image rarely fills the frame. Compute the actual displayed image
+// rect within the frame so boxes land exactly on faces (positioning boxes as a
+// % of the *frame* left them offset/mis-scaled whenever the photo's aspect
+// ratio differed from the frame's).
+function displayedPhotoRect() {
+  const frame = $("photo-frame");
+  const fw = frame.clientWidth, fh = frame.clientHeight;
+  const nw = state.photoDims?.w, nh = state.photoDims?.h;
+  if (!nw || !nh) return { left: 0, top: 0, width: fw, height: fh };
+  const ir = nw / nh, fr = fw / fh;
+  let dw, dh;
+  if (ir > fr) { dw = fw; dh = fw / ir; } else { dh = fh; dw = fh * ir; }
+  return { left: (fw - dw) / 2, top: (fh - dh) / 2, width: dw, height: dh };
+}
+
+function positionBoxes() {
+  const { w, h } = state.photoDims || {};
+  if (!w || !h) return;
+  const r = displayedPhotoRect();
+  state.faces.forEach(face => {
+    const div = document.getElementById(`bbox-${face.id}`);
+    if (!div) return;
+    div.style.left   = (r.left + face.bbox.x / w * r.width) + "px";
+    div.style.top    = (r.top  + face.bbox.y / h * r.height) + "px";
+    div.style.width  = (face.bbox.w / w * r.width) + "px";
+    div.style.height = (face.bbox.h / h * r.height) + "px";
+  });
+}
+
 function drawBoundingBoxes(w, h) {
   const frame = $("photo-frame");
   frame.querySelectorAll(".box").forEach(b => b.remove());
+  state.photoDims = { w, h };
   state.faces.forEach((face, i) => {
     const div = document.createElement("div");
     div.className = "box";
     div.id = `bbox-${face.id}`;
-    div.style.left   = (face.bbox.x / w * 100) + "%";
-    div.style.top    = (face.bbox.y / h * 100) + "%";
-    div.style.width  = (face.bbox.w / w * 100) + "%";
-    div.style.height = (face.bbox.h / h * 100) + "%";
     div.style.animationDelay = (i * 60) + "ms";
     div.innerHTML = `<div class="chip">P${face.id}</div>`;
     frame.appendChild(div);
   });
+  positionBoxes();
+  // Re-measure after layout settles (the ready-state transition can resize the frame).
+  requestAnimationFrame(positionBoxes);
 }
+
+window.addEventListener("resize", positionBoxes);
 
 function buildFaceTiles() {
   const strip = $("faces-strip");
@@ -1525,18 +1621,154 @@ async function cropFace(img, bb) {
   return canvas.toDataURL("image/jpeg", 0.92);
 }
 
+// ════════ Multi-pass face detection ════════
+// BlazeFace short-range resizes the whole frame to ~128px before inference, so
+// on a big wide group photo the faces shrink below the detectable size. We run
+// detection on the full frame (cheap, catches close-ups) plus on overlapping
+// tiles (each upscaled so faces are large), then merge + de-dup via NMS.
+// Returns an array of { x, y, w, h } in FULL-IMAGE pixel coordinates.
+function detectFacesMultiPass(img) {
+  const fullW = img.naturalWidth, fullH = img.naturalHeight;
+  const all = [];
+
+  // Pass 1: full frame (preserves the original close-up behavior).
+  const full = state.detector.detect(img);
+  (full.detections || []).forEach(d => {
+    all.push({
+      x: d.boundingBox.originX, y: d.boundingBox.originY,
+      w: d.boundingBox.width, h: d.boundingBox.height,
+      score: d.categories?.[0]?.score ?? 1,
+    });
+  });
+
+  // Pass 2: tiled detection. Build a tile layout that adapts to aspect ratio.
+  // A denser grid keeps each face large relative to BlazeFace's internal 128px
+  // downscale; empirically a wide conference photo needs 4x2 (a coarse 3x1 left
+  // the foreground faces below the detection threshold).
+  // Grid + overlap tuned on a 15-image suite of posed group photos (1..12
+  // people): 4x3 for square/portrait, 4x2 for wide. 25% overlap so faces on a
+  // tile seam survive in at least one tile.
+  const aspect = fullW / fullH;
+  const overlap = 0.25;
+  let cols, rows;
+  if (aspect > 1.4) {
+    cols = 4; rows = 2; // wide group shot
+  } else {
+    cols = 4; rows = 3; // square/portrait
+  }
+
+  // Base (non-overlapping) tile size, then expand each tile by the overlap.
+  const baseTileW = fullW / cols;
+  const baseTileH = fullH / rows;
+  const padX = baseTileW * overlap;
+  const padY = baseTileH * overlap;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      // Crop region in full-image pixels, clamped to image bounds.
+      let cropX = Math.round(c * baseTileW - padX);
+      let cropY = Math.round(r * baseTileH - padY);
+      let cropW = Math.round(baseTileW + 2 * padX);
+      let cropH = Math.round(baseTileH + 2 * padY);
+      cropX = Math.max(0, cropX);
+      cropY = Math.max(0, cropY);
+      cropW = Math.min(cropW, fullW - cropX);
+      cropH = Math.min(cropH, fullH - cropY);
+      if (cropW <= 0 || cropH <= 0) continue;
+
+      // Scale so the tile's short side is at least ~512px (upscale only).
+      const shortSide = Math.min(cropW, cropH);
+      const scale = Math.max(1, 512 / shortSide);
+      canvas.width = Math.round(cropW * scale);
+      canvas.height = Math.round(cropH * scale);
+      ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+
+      const res = state.detector.detect(canvas);
+      (res.detections || []).forEach(d => {
+        const b = d.boundingBox;
+        // Transform tile-canvas coords back to full-image pixel coords:
+        // undo the canvas scale, then add the crop offset.
+        all.push({
+          x: cropX + b.originX / scale,
+          y: cropY + b.originY / scale,
+          w: b.width / scale,
+          h: b.height / scale,
+          score: d.categories?.[0]?.score ?? 1,
+        });
+      });
+    }
+  }
+
+  // Confidence floor: the detector runs at a deliberately low 0.2 threshold to
+  // catch small/off-axis faces, which also lets through a tail of false
+  // positives. A 0.5 floor cleanly separated real faces from noise across the
+  // 1..12-person test suite. We bias toward recall (0.5, not higher) because
+  // over-detection is user-recoverable — each face has an include/exclude
+  // toggle — whereas a missed person can't be added back.
+  const kept = all.filter(b => b.score >= 0.5);
+  return nonMaxSuppress(kept);
+}
+
+// De-duplicate overlapping boxes. Keep the higher-SCORE box; drop a later box
+// if it overlaps a kept one (IoU > 0.35) OR is mostly contained within it
+// (handles the full-frame box vs a larger tile box for the same face, which
+// can have low IoU yet clearly be the same detection).
+function nonMaxSuppress(boxes) {
+  const sorted = [...boxes].sort((a, b) => (b.score ?? 1) - (a.score ?? 1));
+  const kept = [];
+  for (const box of sorted) {
+    let dup = false;
+    for (const k of kept) {
+      if (iou(box, k) > 0.35 || containedFraction(box, k) > 0.6) { dup = true; break; }
+    }
+    if (!dup) kept.push(box);
+  }
+  return kept;
+}
+
+// Fraction of box `a`'s area that lies inside box `b`.
+function containedFraction(a, b) {
+  const x1 = Math.max(a.x, b.x);
+  const y1 = Math.max(a.y, b.y);
+  const x2 = Math.min(a.x + a.w, b.x + b.w);
+  const y2 = Math.min(a.y + a.h, b.y + b.h);
+  const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
+  const areaA = a.w * a.h;
+  return areaA > 0 ? inter / areaA : 0;
+}
+
+// Intersection-over-union of two { x, y, w, h } boxes.
+function iou(a, b) {
+  const x1 = Math.max(a.x, b.x);
+  const y1 = Math.max(a.y, b.y);
+  const x2 = Math.min(a.x + a.w, b.x + b.w);
+  const y2 = Math.min(a.y + a.h, b.y + b.h);
+  const iw = Math.max(0, x2 - x1);
+  const ih = Math.max(0, y2 - y1);
+  const inter = iw * ih;
+  if (inter <= 0) return 0;
+  const union = a.w * a.h + b.w * b.h - inter;
+  return union > 0 ? inter / union : 0;
+}
+
 function ensureDetectorReady() {
   if (state.detectorReady) return state.detectorReady;
   state.detectorReady = (async () => {
     const fileset = await FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
     );
+    // Default to the short-range BlazeFace, but lower the confidence threshold so we
+    // pick up smaller / off-axis faces in a multi-person group shot (the default 0.5
+    // was missing 3-of-4 faces in a conference-distance photo).
     state.detector = await FaceDetector.createFromOptions(fileset, {
       baseOptions: {
         modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite",
       },
       runningMode: "IMAGE",
-      minDetectionConfidence: 0.5,
+      minDetectionConfidence: 0.2,
     });
   })();
   return state.detectorReady;
@@ -1744,7 +1976,7 @@ function buildPrompt(country, includedFaces) {
     "",
     `BACKGROUND: blurred view of a large floodlit football stadium with a packed crowd. Green grass pitch. Bright stadium lighting.`,
     "",
-    `STYLE: ultra-photorealistic sports photography, 35mm full-frame, 50mm prime lens, f/4, ISO 400, mild depth of field, players sharp and crowd softly blurred. No text, no captions, no scoreboards, no flags overlaid in foreground.`,
+    `STYLE: ultra-photorealistic broadcast sports photography shot on a Sony A1 with a 70-200mm f/2.8 lens, players tack-sharp and crowd softly blurred. LIFELIKE SKIN: natural skin texture with visible pores and fine detail, subsurface scattering, realistic blemishes, NOT smooth/waxy/plastic, no CGI or 3D-render look. Accurate neutral white balance under stadium floodlights, high dynamic range, subtle photographic film grain, natural catchlights in the eyes. No text, no captions, no scoreboards, no flags overlaid in foreground, no AI artifacts.`,
   ].join("\n");
 }
 
@@ -1916,16 +2148,15 @@ function hideQR() {
 }
 
 async function buildHeaderedComposite(gcsUrl) {
+  // Returns the clean generated team photo as a downloadable PNG blob — no
+  // hackathon frame/branding overlay (the frame was removed by request).
   const teamSrc = `/api/download?inline=1&url=${encodeURIComponent(gcsUrl)}`;
   const teamImg = await loadImage(teamSrc);
-  let frameImg = null;
-  try { frameImg = await loadImage("/svg/frame.png"); } catch {}
   const teamW = teamImg.naturalWidth, teamH = teamImg.naturalHeight;
   const canvas = document.createElement("canvas");
   canvas.width = teamW; canvas.height = teamH;
   const ctx = canvas.getContext("2d");
   ctx.drawImage(teamImg, 0, 0, teamW, teamH);
-  if (frameImg) ctx.drawImage(frameImg, 0, 0, teamW, teamH);
   const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
   const blobUrl = URL.createObjectURL(blob);
   const img = new Image();
@@ -2190,6 +2421,13 @@ function startChoreo() {
   const hasCamera = !!(state.stream && video.videoWidth > 0);
   state.asciiRunning = true;
 
+  // Show the live webcam in the corner while generating (camera captures only).
+  const choreoCam = $("choreo-cam");
+  if (choreoCam) {
+    if (hasCamera) { choreoCam.srcObject = state.stream; choreoCam.style.display = "block"; }
+    else { choreoCam.srcObject = null; choreoCam.style.display = "none"; }
+  }
+
   if (hasCamera) {
     state.balls = makeBalls();
     state.prevBrightness = null;
@@ -2296,6 +2534,8 @@ function stopChoreo() {
   state.choreoTimers = [];
   state.balls = null;
   state.prevBrightness = null;
+  const choreoCam = $("choreo-cam");
+  if (choreoCam) { choreoCam.srcObject = null; choreoCam.style.display = "none"; }
 }
 
 // ════════ Result auto-return countdown ════════

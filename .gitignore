@@ -16,3 +16,6 @@ __pycache__/
 
 # Build / runtime
 *.log
+
+# Generated test fixtures (regenerable via scripts/gen_test_images.py)
+test-fixtures/

@@ -45,7 +45,7 @@ VISION_MODEL = os.environ.get("VISION_MODEL", "google/gemini-3.1-flash-lite-prev
 # avg 14.6s with consistent 85/100 identity, vs gpt-image-2-edit at 124s avg
 # (variable 50-92 id, with frequent 60s+ outliers). Override via EDIT_MODEL env
 # var to fall back to gpt-image-2-edit for max-identity at the cost of speed.
-EDIT_MODEL = os.environ.get("EDIT_MODEL", "gemini-3.1-flash-image-preview")
+EDIT_MODEL = os.environ.get("EDIT_MODEL", "gpt-image-2-edit")
 
 VISION_PROMPT = (
     "You are analyzing one cropped face. Return ONLY a JSON object with exactly these keys:\n"
@@ -131,6 +131,19 @@ def serve_svg(filename: str):
 @app.get("/GDG-header.png")
 def serve_header():
     return send_from_directory(ROOT, "GDG-header.png", mimetype="image/png")
+
+
+@app.get("/test-photo.jpg")
+def _test_photo():
+    # Dev-only: lets the headless test driver fetch the local fixture
+    # from the page without going through the OS file picker.
+    return send_from_directory(".", "test-photo.jpg")
+
+
+@app.get("/group-photo.png")
+def _group_photo():
+    # Dev fixture for multi-face detection testing.
+    return send_from_directory(".", "group-photo.png")
 
 
 @app.get("/api/header-exists")
@@ -322,8 +335,7 @@ def ensure_url(data_uri_or_url: str) -> str:
     """
     if not data_uri_or_url.startswith("data:"):
         return data_uri_or_url
-    import hashlib, subprocess, tempfile
-    # Extract bytes + extension
+    import hashlib
     header, _, b64data = data_uri_or_url.partition(",")
     mime = header.split(":", 1)[1].split(";", 1)[0] if ":" in header else "image/jpeg"
     ext = "jpg" if "jpeg" in mime else ("png" if "png" in mime else mime.split("/")[-1])
@@ -331,26 +343,40 @@ def ensure_url(data_uri_or_url: str) -> str:
     digest = hashlib.sha256(raw).hexdigest()[:16]
     if digest in _url_cache:
         cached = _url_cache[digest]
-        # Best-effort liveness check (litterbox URLs expire after 1h)
+        # litter.catbox.moe returns 405 on HEAD, so use a 1-byte GET to check liveness.
         try:
-            if requests.head(cached, timeout=5).status_code == 200:
+            r = requests.get(cached, headers={"Range": "bytes=0-0"}, timeout=5, stream=True)
+            r.close()
+            if r.status_code in (200, 206):
                 return cached
         except Exception:
             pass
-    with tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False) as tmp:
-        tmp.write(raw)
-        tmp.flush()
-        out = subprocess.check_output([
-            "curl", "-sS",
-            "-F", "reqtype=fileupload",
-            "-F", "time=1h",
-            "-F", f"fileToUpload=@{tmp.name}",
-            "https://litterbox.catbox.moe/resources/internals/api.php",
-        ], stderr=subprocess.STDOUT, timeout=60).decode().strip()
-    if not out.startswith("https://"):
-        raise RuntimeError(f"litterbox upload failed: {out[:200]}")
-    _url_cache[digest] = out
-    return out
+
+    filename = f"upload.{ext}"
+    # Try litterbox (1h retention) twice, then catbox.moe (permanent) as fallback.
+    attempts = [
+        ("https://litterbox.catbox.moe/resources/internals/api.php", {"reqtype": "fileupload", "time": "1h"}),
+        ("https://litterbox.catbox.moe/resources/internals/api.php", {"reqtype": "fileupload", "time": "1h"}),
+        ("https://catbox.moe/user/api.php", {"reqtype": "fileupload"}),
+    ]
+    last_err = "no attempts ran"
+    for endpoint, fields in attempts:
+        try:
+            r = requests.post(
+                endpoint,
+                data=fields,
+                files={"fileToUpload": (filename, raw, mime)},
+                timeout=60,
+            )
+            body = (r.text or "").strip()
+            if r.status_code == 200 and body.startswith("https://"):
+                _url_cache[digest] = body
+                return body
+            last_err = f"{endpoint} → HTTP {r.status_code} body={body[:200]!r}"
+        except Exception as e:
+            last_err = f"{endpoint} → {e.__class__.__name__}: {e}"
+        time.sleep(0.5)
+    raise RuntimeError(f"image host upload failed after retries: {last_err}")
 
 
 def submit_image_edit(prompt: str, reference_image_data_uri: str, model: str = None, quality: str = None):
@@ -362,7 +388,17 @@ def submit_image_edit(prompt: str, reference_image_data_uri: str, model: str = N
         "model": use_model,
         "payload": build_edit_payload(use_model, prompt, ref, quality),
     }
-    return requests.post(GMI_QUEUE_URL, headers=gmi_headers(), json=body, timeout=(10, 300))
+    # GMI's queue endpoint is synchronous-ish: it waits for the model. 180s
+    # tolerates a slow run; if it actually times out we retry once before
+    # giving up, because cold-starts on the GMI side cause occasional spikes.
+    last_exc = None
+    for attempt in range(2):
+        try:
+            return requests.post(GMI_QUEUE_URL, headers=gmi_headers(), json=body, timeout=(10, 180))
+        except requests.exceptions.ReadTimeout as e:
+            last_exc = e
+            print(f"[submit_image_edit] ReadTimeout on attempt {attempt + 1}, retrying…", flush=True)
+    raise last_exc
 
 
 def extract_image_url(payload: dict):
@@ -464,6 +500,18 @@ def api_generate():
     t0 = time.monotonic()
     try:
         r = submit_image_edit(prompt, reference, model=model, quality=quality)
+        # Some edit models (notably gpt-image-2-edit) refuse group photos of real,
+        # identifiable people with a 400 "Generation rejected". When that happens
+        # and the caller didn't pin a specific model, fall back to the gemini image
+        # model, which handles multi-face identity edits (and is faster). Override
+        # the fallback target via FALLBACK_EDIT_MODEL.
+        _rej = (r.text or "").lower()
+        if (r.status_code == 400 and not model
+                and any(w in _rej for w in ("reject", "policy", "blocked", "safety", "denied"))):
+            fallback = os.environ.get("FALLBACK_EDIT_MODEL", "gemini-3.1-flash-image-preview")
+            print(f"[api_generate] {used_model} rejected; falling back to {fallback}", flush=True)
+            used_model = fallback
+            r = submit_image_edit(prompt, reference, model=fallback, quality=quality)
         if r.status_code >= 400:
             err = f"GMI submit error: {r.status_code} {r.text[:800]}"
             db.insert_generation(photo_id, country_code or None, country_name, n_people, prompt,
